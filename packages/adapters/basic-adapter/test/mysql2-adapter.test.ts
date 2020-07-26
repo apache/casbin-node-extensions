@@ -16,7 +16,7 @@ import { createConnection } from 'mysql2/promise';
 import Runner from './runner';
 
 test(
-  'mysql adapter',
+  'mysql2 adapter',
   Runner(
     'mysql2',
     createConnection({
