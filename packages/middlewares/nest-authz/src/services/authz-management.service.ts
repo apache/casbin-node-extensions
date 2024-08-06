@@ -1,9 +1,11 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { AUTHZ_ENFORCER } from '../authz.constants';
 import * as casbin from 'casbin';
+import * as authzAPI from './authz-api';
 
 /**
  * A wrapper of casbin management API
+ * @deprecated This service will be removed and replace by AuthZService in a later release.
  */
 @Injectable()
 export class AuthZManagementService {
@@ -20,7 +22,7 @@ export class AuthZManagementService {
    * @return whether or not the request is allowed
    */
   enforce(...params: string[]): Promise<boolean> {
-    return this.enforcer.enforce(params);
+    return authzAPI.enforce(this.enforcer, params);
   }
 
   /**
@@ -32,7 +34,7 @@ export class AuthZManagementService {
    * @return whether or not the request is allowed
    */
   enforceWithMatcher(matcher: string, ...params: string[]): Promise<boolean> {
-    return this.enforcer.enforceWithMatcher(matcher, params);
+    return authzAPI.enforceWithMatcher(this.enforcer, matcher, params);
   }
 
   /**
@@ -43,7 +45,7 @@ export class AuthZManagementService {
    * @return whether or not the request is allowed, and what policy caused that decision
    */
   enforceEx(...params: string[]): Promise<[boolean, string[]]> {
-    return this.enforcer.enforceEx(params);
+    return authzAPI.enforceEx(this.enforcer, params);
   }
 
   /**
@@ -58,7 +60,7 @@ export class AuthZManagementService {
     matcher: string,
     ...params: string[]
   ): Promise<[boolean, string[]]> {
-    return this.enforcer.enforceExWithMatcher(matcher, params);
+    return authzAPI.enforceExWithMatcher(this.enforcer, matcher, params);
   }
 
   /**
@@ -69,7 +71,7 @@ export class AuthZManagementService {
    * @return an array with the enforcement results for each given request
    */
   batchEnforce(params: string[][]): Promise<boolean[]> {
-    return this.enforcer.batchEnforce(params);
+    return authzAPI.batchEnforce(this.enforcer, params);
   }
 
   /**
@@ -80,7 +82,7 @@ export class AuthZManagementService {
    *         is the 0-index element, like (sub, obj, act). Duplicates are removed.
    */
   getAllSubjects(): Promise<string[]> {
-    return this.enforcer.getAllSubjects();
+    return authzAPI.getAllSubjects(this.enforcer);
   }
   /**
    * getAllNamedSubjects gets the list of subjects that show up in the currentnamed policy.
@@ -92,7 +94,7 @@ export class AuthZManagementService {
    *         Duplicates are removed.
    */
   getAllNamedSubjects(ptype: string): Promise<string[]> {
-    return this.enforcer.getAllNamedSubjects(ptype);
+    return authzAPI.getAllNamedSubjects(this.enforcer, ptype);
   }
   /**
    * getAllObjects gets the list of objects that show up in the current policy.
@@ -103,7 +105,7 @@ export class AuthZManagementService {
    *         Duplicates are removed.
    */
   getAllObjects(): Promise<string[]> {
-    return this.enforcer.getAllObjects();
+    return authzAPI.getAllObjects(this.enforcer);
   }
   /**
    * getAllNamedObjects gets the list of objects that show up in the current named policy.
@@ -115,7 +117,7 @@ export class AuthZManagementService {
    *         Duplicates are removed.
    */
   getAllNamedObjects(ptype: string): Promise<string[]> {
-    return this.enforcer.getAllNamedObjects(ptype);
+    return authzAPI.getAllNamedObjects(this.enforcer, ptype);
   }
   /**
    * getAllActions gets the list of actions that show up in the current policy.
@@ -126,7 +128,7 @@ export class AuthZManagementService {
    *         Duplicates are removed.
    */
   getAllActions(): Promise<string[]> {
-    return this.enforcer.getAllActions();
+    return authzAPI.getAllActions(this.enforcer);
   }
   /**
    * GetAllNamedActions gets the list of actions that show up in the current named policy.
@@ -138,7 +140,7 @@ export class AuthZManagementService {
    *         Duplicates are removed.
    */
   getAllNamedActions(ptype: string): Promise<string[]> {
-    return this.enforcer.getAllNamedActions(ptype);
+    return authzAPI.getAllNamedActions(this.enforcer, ptype);
   }
   /**
    * getAllRoles gets the list of roles that show up in the current policy.
@@ -149,7 +151,7 @@ export class AuthZManagementService {
    *         Duplicates are removed.
    */
   getAllRoles(): Promise<string[]> {
-    return this.enforcer.getAllRoles();
+    return authzAPI.getAllRoles(this.enforcer);
   }
   /**
    * getAllNamedRoles gets the list of roles that show up in the current named policy.
@@ -161,7 +163,7 @@ export class AuthZManagementService {
    *         Duplicates are removed.
    */
   getAllNamedRoles(ptype: string): Promise<string[]> {
-    return this.enforcer.getAllNamedRoles(ptype);
+    return authzAPI.getAllNamedRoles(this.enforcer, ptype);
   }
   /**
    * getPolicy gets all the authorization rules in the policy.
@@ -169,7 +171,7 @@ export class AuthZManagementService {
    * @return all the "p" policy rules.
    */
   getPolicy(): Promise<string[][]> {
-    return this.enforcer.getPolicy();
+    return authzAPI.getPolicy(this.enforcer);
   }
   /**
    * getFilteredPolicy gets all the authorization rules in the policy, field filters can be specified.
@@ -183,7 +185,11 @@ export class AuthZManagementService {
     fieldIndex: number,
     ...fieldValues: string[]
   ): Promise<string[][]> {
-    return this.enforcer.getFilteredPolicy(fieldIndex, ...fieldValues);
+    return authzAPI.getFilteredPolicy(
+      this.enforcer,
+      fieldIndex,
+      ...fieldValues
+    );
   }
   /**
    * getNamedPolicy gets all the authorization rules in the named policy.
@@ -192,7 +198,7 @@ export class AuthZManagementService {
    * @return the "p" policy rules of the specified ptype.
    */
   getNamedPolicy(ptype: string): Promise<string[][]> {
-    return this.enforcer.getNamedPolicy(ptype);
+    return authzAPI.getNamedPolicy(this.enforcer, ptype);
   }
   /**
    * getFilteredNamedPolicy gets all the authorization rules in the named policy, field filters can be specified.
@@ -208,7 +214,8 @@ export class AuthZManagementService {
     fieldIndex: number,
     ...fieldValues: string[]
   ): Promise<string[][]> {
-    return this.enforcer.getFilteredNamedPolicy(
+    return authzAPI.getFilteredNamedPolicy(
+      this.enforcer,
       ptype,
       fieldIndex,
       ...fieldValues
@@ -220,7 +227,7 @@ export class AuthZManagementService {
    * @return all the "g" policy rules.
    */
   getGroupingPolicy(): Promise<string[][]> {
-    return this.enforcer.getGroupingPolicy();
+    return authzAPI.getGroupingPolicy(this.enforcer);
   }
   /**
    * getFilteredGroupingPolicy gets all the role inheritance rules in the policy, field filters can be specified.
@@ -233,7 +240,11 @@ export class AuthZManagementService {
     fieldIndex: number,
     ...fieldValues: string[]
   ): Promise<string[][]> {
-    return this.enforcer.getFilteredGroupingPolicy(fieldIndex, ...fieldValues);
+    return authzAPI.getFilteredGroupingPolicy(
+      this.enforcer,
+      fieldIndex,
+      ...fieldValues
+    );
   }
   /**
    * getNamedGroupingPolicy gets all the role inheritance rules in the policy.
@@ -242,7 +253,7 @@ export class AuthZManagementService {
    * @return the "g" policy rules of the specified ptype.
    */
   getNamedGroupingPolicy(ptype: string): Promise<string[][]> {
-    return this.enforcer.getNamedGroupingPolicy(ptype);
+    return authzAPI.getNamedGroupingPolicy(this.enforcer, ptype);
   }
   /**
    * getFilteredNamedGroupingPolicy gets all the role inheritance rules in the policy, field filters can be specified.
@@ -258,7 +269,8 @@ export class AuthZManagementService {
     fieldIndex: number,
     ...fieldValues: string[]
   ): Promise<string[][]> {
-    return this.enforcer.getFilteredNamedGroupingPolicy(
+    return authzAPI.getFilteredNamedGroupingPolicy(
+      this.enforcer,
       ptype,
       fieldIndex,
       ...fieldValues
@@ -271,7 +283,7 @@ export class AuthZManagementService {
    * @return whether the rule exists.
    */
   hasPolicy(...params: string[]): Promise<boolean> {
-    return this.enforcer.hasPolicy(...params);
+    return authzAPI.hasPolicy(this.enforcer, ...params);
   }
   /**
    * hasNamedPolicy determines whether a named authorization rule exists.
@@ -281,7 +293,7 @@ export class AuthZManagementService {
    * @return whether the rule exists.
    */
   hasNamedPolicy(ptype: string, ...params: string[]): Promise<boolean> {
-    return this.enforcer.hasNamedPolicy(ptype, ...params);
+    return authzAPI.hasNamedPolicy(this.enforcer, ptype, ...params);
   }
   /**
    * addPolicy adds an authorization rule to the current policy.
@@ -292,7 +304,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   addPolicy(...params: string[]): Promise<boolean> {
-    return this.enforcer.addPolicy(...params);
+    return authzAPI.addPolicy(this.enforcer, ...params);
   }
 
   /**
@@ -304,7 +316,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   addPolicies(rules: string[][]): Promise<boolean> {
-    return this.enforcer.addPolicies(rules);
+    return authzAPI.addPolicies(this.enforcer, rules);
   }
 
   /**
@@ -317,7 +329,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   addNamedPolicy(ptype: string, ...params: string[]): Promise<boolean> {
-    return this.enforcer.addNamedPolicy(ptype, ...params);
+    return authzAPI.addNamedPolicy(this.enforcer, ptype, ...params);
   }
 
   /**
@@ -330,7 +342,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   addNamedPolicies(ptype: string, rules: string[][]): Promise<boolean> {
-    return this.enforcer.addNamedPolicies(ptype, rules);
+    return authzAPI.addNamedPolicies(this.enforcer, ptype, rules);
   }
 
   /**
@@ -343,7 +355,7 @@ export class AuthZManagementService {
    * @param newRule the policy will be added
    */
   updatePolicy(oldRule: string[], newRule: string[]): Promise<boolean> {
-    return this.enforcer.updatePolicy(oldRule, newRule);
+    return authzAPI.updatePolicy(this.enforcer, oldRule, newRule);
   }
 
   /**
@@ -361,7 +373,7 @@ export class AuthZManagementService {
     oldRule: string[],
     newRule: string[]
   ): Promise<boolean> {
-    return this.enforcer.updateNamedPolicy(ptype, oldRule, newRule);
+    return authzAPI.updateNamedPolicy(this.enforcer, ptype, oldRule, newRule);
   }
 
   /**
@@ -371,7 +383,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   removePolicy(...params: string[]): Promise<boolean> {
-    return this.enforcer.removePolicy(...params);
+    return authzAPI.removePolicy(this.enforcer, ...params);
   }
   /**
    * removePolicies removes an authorization rules from the current policy.
@@ -380,7 +392,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   removePolicies(rules: string[][]): Promise<boolean> {
-    return this.enforcer.removePolicies(rules);
+    return authzAPI.removePolicies(this.enforcer, rules);
   }
   /**
    * removeFilteredPolicy removes an authorization rule from the current policy, field filters can be specified.
@@ -394,7 +406,11 @@ export class AuthZManagementService {
     fieldIndex: number,
     ...fieldValues: string[]
   ): Promise<boolean> {
-    return this.enforcer.removeFilteredPolicy(fieldIndex, ...fieldValues);
+    return authzAPI.removeFilteredPolicy(
+      this.enforcer,
+      fieldIndex,
+      ...fieldValues
+    );
   }
   /**
    * removeNamedPolicy removes an authorization rule from the current named policy.
@@ -404,7 +420,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   removeNamedPolicy(ptype: string, ...params: string[]): Promise<boolean> {
-    return this.enforcer.removeNamedPolicy(ptype, ...params);
+    return authzAPI.removeNamedPolicy(this.enforcer, ptype, ...params);
   }
   /**
    * removeNamedPolicies removes authorization rules from the current named policy.
@@ -414,7 +430,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   removeNamedPolicies(ptype: string, rules: string[][]): Promise<boolean> {
-    return this.enforcer.removeNamedPolicies(ptype, rules);
+    return authzAPI.removeNamedPolicies(this.enforcer, ptype, rules);
   }
   /**
    * removeFilteredNamedPolicy removes an authorization rule from the current named policy, field filters can be specified.
@@ -430,7 +446,8 @@ export class AuthZManagementService {
     fieldIndex: number,
     ...fieldValues: string[]
   ): Promise<boolean> {
-    return this.enforcer.removeFilteredNamedPolicy(
+    return authzAPI.removeFilteredNamedPolicy(
+      this.enforcer,
       ptype,
       fieldIndex,
       ...fieldValues
@@ -443,7 +460,7 @@ export class AuthZManagementService {
    * @return whether the rule exists.
    */
   hasGroupingPolicy(...params: string[]): Promise<boolean> {
-    return this.enforcer.hasGroupingPolicy(...params);
+    return authzAPI.hasGroupingPolicy(this.enforcer, ...params);
   }
   /**
    * hasNamedGroupingPolicy determines whether a named role inheritance rule exists.
@@ -453,7 +470,7 @@ export class AuthZManagementService {
    * @return whether the rule exists.
    */
   hasNamedGroupingPolicy(ptype: string, ...params: string[]): Promise<boolean> {
-    return this.enforcer.hasNamedGroupingPolicy(ptype, ...params);
+    return authzAPI.hasNamedGroupingPolicy(this.enforcer, ptype, ...params);
   }
   /**
    * addGroupingPolicy adds a role inheritance rule to the current policy.
@@ -464,7 +481,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   addGroupingPolicy(...params: string[]): Promise<boolean> {
-    return this.enforcer.addGroupingPolicy(...params);
+    return authzAPI.addGroupingPolicy(this.enforcer, ...params);
   }
   /**
    * addGroupingPolicies adds a role inheritance rules to the current policy.
@@ -475,7 +492,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   addGroupingPolicies(rules: string[][]): Promise<boolean> {
-    return this.enforcer.addGroupingPolicies(rules);
+    return authzAPI.addGroupingPolicies(this.enforcer, rules);
   }
   /**
    * addNamedGroupingPolicy adds a named role inheritance rule to the current policy.
@@ -487,7 +504,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   addNamedGroupingPolicy(ptype: string, ...params: string[]): Promise<boolean> {
-    return this.enforcer.addNamedGroupingPolicy(ptype, ...params);
+    return authzAPI.addNamedGroupingPolicy(this.enforcer, ptype, ...params);
   }
   /**
    * addNamedGroupingPolicies adds named role inheritance rules to the current policy.
@@ -499,7 +516,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   addNamedGroupingPolicies(ptype: string, rules: string[][]): Promise<boolean> {
-    return this.enforcer.addNamedGroupingPolicies(ptype, rules);
+    return authzAPI.addNamedGroupingPolicies(this.enforcer, ptype, rules);
   }
   /**
    * removeGroupingPolicy removes a role inheritance rule from the current policy.
@@ -508,7 +525,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   removeGroupingPolicy(...params: string[]): Promise<boolean> {
-    return this.enforcer.removeGroupingPolicy(...params);
+    return authzAPI.removeGroupingPolicy(this.enforcer, ...params);
   }
   /**
    * removeGroupingPolicies removes role inheritance rules from the current policy.
@@ -517,7 +534,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   removeGroupingPolicies(rules: string[][]): Promise<boolean> {
-    return this.enforcer.removeGroupingPolicies(rules);
+    return authzAPI.removeGroupingPolicies(this.enforcer, rules);
   }
   /**
    * removeFilteredGroupingPolicy removes a role inheritance rule from the current policy, field filters can be specified.
@@ -531,7 +548,8 @@ export class AuthZManagementService {
     fieldIndex: number,
     ...fieldValues: string[]
   ): Promise<boolean> {
-    return this.enforcer.removeFilteredGroupingPolicy(
+    return authzAPI.removeFilteredGroupingPolicy(
+      this.enforcer,
       fieldIndex,
       ...fieldValues
     );
@@ -547,7 +565,7 @@ export class AuthZManagementService {
     ptype: string,
     ...params: string[]
   ): Promise<boolean> {
-    return this.enforcer.removeNamedGroupingPolicy(ptype, ...params);
+    return authzAPI.removeNamedGroupingPolicy(this.enforcer, ptype, ...params);
   }
   /**
    * removeNamedGroupingPolicies removes role inheritance rules from the current named policy.
@@ -560,7 +578,7 @@ export class AuthZManagementService {
     ptype: string,
     rules: string[][]
   ): Promise<boolean> {
-    return this.enforcer.removeNamedGroupingPolicies(ptype, rules);
+    return authzAPI.removeNamedGroupingPolicies(this.enforcer, ptype, rules);
   }
   /**
    * removeFilteredNamedGroupingPolicy removes a role inheritance rule from the current named policy, field filters can be specified.
@@ -576,7 +594,8 @@ export class AuthZManagementService {
     fieldIndex: number,
     ...fieldValues: string[]
   ): Promise<boolean> {
-    return this.enforcer.removeFilteredNamedGroupingPolicy(
+    return authzAPI.removeFilteredNamedGroupingPolicy(
+      this.enforcer,
       ptype,
       fieldIndex,
       ...fieldValues
@@ -588,14 +607,14 @@ export class AuthZManagementService {
    * @param func function
    */
   addFunction(name: string, func: any): Promise<void> {
-    return this.enforcer.addFunction(name, func);
+    return authzAPI.addFunction(this.enforcer, name, func);
   }
 
   /**
    * loadPolicy reloads the policy from file/database.
    */
   loadPolicy(): Promise<void> {
-    return this.enforcer.loadPolicy();
+    return authzAPI.loadPolicy(this.enforcer);
   }
 
   /**
@@ -608,7 +627,7 @@ export class AuthZManagementService {
    * @return succeeds or not.
    */
   updateGroupingPolicy(oldRule: string[], newRule: string[]): Promise<boolean> {
-    return this.enforcer.updateGroupingPolicy(oldRule, newRule);
+    return authzAPI.updateGroupingPolicy(this.enforcer, oldRule, newRule);
   }
 
   /**
@@ -626,6 +645,11 @@ export class AuthZManagementService {
     oldRule: string[],
     newRule: string[]
   ): Promise<boolean> {
-    return this.enforcer.updateNamedGroupingPolicy(ptype, oldRule, newRule);
+    return authzAPI.updateNamedGroupingPolicy(
+      this.enforcer,
+      ptype,
+      oldRule,
+      newRule
+    );
   }
 }
