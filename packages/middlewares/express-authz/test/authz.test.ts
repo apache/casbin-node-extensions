@@ -15,6 +15,9 @@
 import server from './server';
 import customServer from './customserver';
 import * as supertest from 'supertest';
+import * as express from 'express';
+import { newEnforcer, newModelFromString, StringAdapter } from 'casbin';
+import { authz } from '../src/authz';
 
 const request = supertest(server);
 const customRequest = supertest(customServer);
@@ -313,5 +316,69 @@ describe('pass through custom server tests', () => {
       expect(response.statusCode).toBe(403);
       done();
     });
+  });
+});
+
+describe('query string tests', () => {
+  const model = newModelFromString(`
+[request_definition]
+r = sub, obj, act
+
+[policy_definition]
+p = sub, obj, act
+
+[role_definition]
+g = _, _
+
+[policy_effect]
+e = some(where (p.eft == allow))
+
+[matchers]
+m = g(r.sub, p.sub) && keyMatch2(r.obj, p.obj) && r.act == p.act
+`);
+  const policy = new StringAdapter(`
+p, admin, /users, GET
+p, user, /users/:id, GET
+g, alice, user
+g, root, admin
+`);
+  const app = express();
+  app.use(authz({ newEnforcer: newEnforcer(model, policy) }));
+  app.get('/users', (req, res) => res.status(200).json({ handler: 'listUsers' }));
+  app.get('/users/:id', (req, res) => res.status(200).json({ handler: 'getUser' }));
+  const usersRequest = supertest(app);
+  const alice = `Basic ${Buffer.from('alice:password').toString('base64')}`;
+  const root = `Basic ${Buffer.from('root:password').toString('base64')}`;
+
+  test('test: p, user, /users/:id, GET', (done) => {
+    usersRequest
+      .get('/users/42?verbose=1')
+      .set('Authorization', alice)
+      .then((response) => {
+        expect(response.statusCode).toBe(200);
+        expect(response.body.handler).toBe('getUser');
+        done();
+      });
+  });
+
+  test('test: p, admin, /users, GET', (done) => {
+    usersRequest
+      .get('/users?page=1')
+      .set('Authorization', root)
+      .then((response) => {
+        expect(response.statusCode).toBe(200);
+        expect(response.body.handler).toBe('listUsers');
+        done();
+      });
+  });
+
+  test('test: p, admin, /users, GET - 403', (done) => {
+    usersRequest
+      .get('/users/?x=1')
+      .set('Authorization', alice)
+      .then((response) => {
+        expect(response.statusCode).toBe(403);
+        done();
+      });
   });
 });

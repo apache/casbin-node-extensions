@@ -20,7 +20,7 @@ export interface Authorizer {
 }
 
 interface AuthorizerConstructor {
-  new(req: Request, res: Response, enforcer: Enforcer): Authorizer
+  new (req: Request, res: Response, enforcer: Enforcer): Authorizer;
 }
 
 // BasicAuthorizer class stores the casbin handler
@@ -58,7 +58,8 @@ class BasicAuthorizer implements Authorizer {
   // Returns true (permission granted) or false (permission forbidden)
   async checkPermission(): Promise<boolean> {
     const { req, enforcer } = this;
-    const { originalUrl: path, method } = req;
+    const { method } = req;
+    const path = req.baseUrl + req.path;
     const user = this.getUserName();
     return enforcer.enforce(user, path, method);
   }
@@ -79,10 +80,9 @@ export function authz(opt: AuthzOptions) {
     }
 
     const authorizer = opt.authorizer
-      ? (typeof opt.authorizer === 'function'
-          ? new opt.authorizer(req, res, enforcer)
-          : opt.authorizer
-        )
+      ? typeof opt.authorizer === 'function'
+        ? new opt.authorizer(req, res, enforcer)
+        : opt.authorizer
       : new BasicAuthorizer(req, res, enforcer);
 
     const isAllowed = await authorizer.checkPermission();
