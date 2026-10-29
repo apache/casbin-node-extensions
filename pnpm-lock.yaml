@@ -335,6 +335,9 @@ importers:
       nyc:
         specifier: ^15.1.0
         version: 15.1.0
+      rimraf:
+        specifier: ^5.0.5
+        version: 5.0.10
       sinon:
         specifier: ^9.0.0
         version: 9.2.4
@@ -17661,7 +17664,9 @@ snapshots:
       source-map: 0.6.1
       string-length: 2.0.0
     transitivePeerDependencies:
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@jest/reporters@25.5.1':
     dependencies:
@@ -28124,7 +28129,9 @@ snapshots:
       pretty-format: 24.9.0
       throat: 4.1.0
     transitivePeerDependencies:
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   jest-jasmine2@25.5.4:
     dependencies:
@@ -28146,10 +28153,7 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - utf-8-validate
 
   jest-jasmine2@26.6.3:
     dependencies:
