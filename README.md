@@ -8,11 +8,12 @@ utilities. Each package keeps its own npm package name and semantic version.
 
 ```
 packages/
-├── adapters/     # storage adapters (file, redis, sequelize, typeorm, ...)
-├── watchers/     # multi-instance policy synchronization
-├── middlewares/  # framework integrations (express, koa, egg, nest, hapi)
-└── utils/        # shared utilities
-examples/         # runnable examples (not published to npm)
+├── adapters/       # storage adapters (file, redis, sequelize, typeorm, ...)
+├── watchers/       # multi-instance policy synchronization
+├── middlewares/    # framework integrations (express, koa, egg, nest, hapi)
+├── role-managers/  # role managers (session-based)
+└── utils/          # shared utilities
+examples/           # runnable examples (not published to npm)
 ```
 
 ## Development
