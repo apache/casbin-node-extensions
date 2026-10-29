@@ -90,6 +90,10 @@ jobs:
             sleep 2
           done
           docker exec mysql8 mysql -uroot -proot -e "SELECT VERSION();"
+          docker exec mysql8 mysql -uroot -proot -e "
+            CREATE USER IF NOT EXISTS 'casbin'@'%' IDENTIFIED WITH mysql_native_password BY 'password';
+            GRANT ALL PRIVILEGES ON casbin.* TO 'casbin'@'%';
+            FLUSH PRIVILEGES;"
       - name: Start Redis cluster (redis-watcher cluster tests use port 7000)
         run: |
           for port in 7000 7001 7002; do
