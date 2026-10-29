@@ -1,0 +1,184 @@
+name: Release
+
+# Releases are triggered manually, by pushing a git tag. There is no automatic
+# release on merge/push to master, because Apache releases require a vote.
+#
+#   v1.4.0-rc1  -> GitHub *pre-release* only (the artifact to vote on)
+#   v1.4.0      -> GitHub release + publish to npm
+#
+# In both cases the release carries an Apache-style source tarball as an asset.
+# The release manager downloads it, signs it locally with their own GPG key and
+# uses it for the vote. Signing and uploading to dist.apache.org are deliberately
+# NOT done here.
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  # Apache source-release artifact naming: apache-<project>-<version>[-incubating]-src.tar.gz
+  ARTIFACT_PREFIX: apache-casbin-typeorm-adapter
+  # Podlings must carry "incubating" in the artifact name. Set to '' after graduation.
+  INCUBATING_SUFFIX: -incubating
+
+jobs:
+  release:
+    if: github.repository == 'apache/casbin-typeorm-adapter'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ^20
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Parse tag
+        id: meta
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+
+          if [[ "$VERSION" =~ ^([0-9]+\.[0-9]+\.[0-9]+)-[Rr][Cc]([0-9]+)$ ]]; then
+            BASE_VERSION="${BASH_REMATCH[1]}"
+            RC_NUMBER="${BASH_REMATCH[2]}"
+            IS_RC=true
+          elif [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            BASE_VERSION="$VERSION"
+            RC_NUMBER=""
+            IS_RC=false
+          else
+            echo "::error::Tag '$TAG' is not a supported release tag. Use vX.Y.Z or vX.Y.Z-rcN."
+            exit 1
+          fi
+
+          # The tarball is always named after the final version, never after the RC.
+          # That way the exact bits (and filename) that were voted on are the bits
+          # that get released - the RM does not have to rename or re-sign anything.
+          ARTIFACT="${ARTIFACT_PREFIX}-${BASE_VERSION}${INCUBATING_SUFFIX}-src"
+
+          {
+            echo "tag=$TAG"
+            echo "base_version=$BASE_VERSION"
+            echo "rc_number=$RC_NUMBER"
+            echo "is_rc=$IS_RC"
+            echo "artifact=$ARTIFACT"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build source release tarball
+        env:
+          ARTIFACT: ${{ steps.meta.outputs.artifact }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          BASE_VERSION: ${{ steps.meta.outputs.base_version }}
+        run: |
+          set -euo pipefail
+          STAGE="$(mktemp -d)"
+          mkdir -p "$STAGE/$ARTIFACT" dist-release
+
+          # Stage exactly what git tracks at the tag: no .git, honours export-ignore.
+          git archive --format=tar "$TAG" | tar -x -C "$STAGE/$ARTIFACT"
+
+          # package.json in the repo carries a 0.0.0 placeholder - the tag is the
+          # source of truth, so stamp the real version into the source release.
+          # Deliberately a surgical text edit rather than `npm pkg set`, which
+          # also re-sorts dependencies: the tarball must differ from the tagged
+          # tree in the version line and nothing else. Re-parsed afterwards so a
+          # regex that hit the wrong key fails the build instead of shipping.
+          node -e 'const fs=require("fs");const[f,v]=process.argv.slice(1);const s=fs.readFileSync(f,"utf8");const o=s.replace(/"version":\s*"[^"]*"/,"\"version\": \""+v+"\"");fs.writeFileSync(f,o);const p=JSON.parse(o);if(p.version!==v){console.error("version stamp failed");process.exit(1);}' \
+            "$STAGE/$ARTIFACT/package.json" "$BASE_VERSION"
+          grep '"version"' "$STAGE/$ARTIFACT/package.json"
+
+          # Deterministic tarball: fixed entry order, mtime pinned to the tagged
+          # commit, no uid/gid, and gzip -n to drop its timestamp. Re-running this
+          # workflow on the same tag therefore reproduces identical bytes, so the
+          # RM's signature always matches what anyone else can rebuild.
+          COMMIT_TS="$(git log -1 --format=%ct "$TAG")"
+          tar --sort=name --format=gnu \
+              --mtime="@${COMMIT_TS}" \
+              --owner=0 --group=0 --numeric-owner \
+              -C "$STAGE" -cf - "$ARTIFACT" \
+            | gzip -n > "dist-release/${ARTIFACT}.tar.gz"
+
+          cd dist-release
+          sha512sum "${ARTIFACT}.tar.gz" > "${ARTIFACT}.tar.gz.sha512"
+          sha512sum -c "${ARTIFACT}.tar.gz.sha512"
+          ls -l
+
+      - name: Write release notes
+        env:
+          ARTIFACT: ${{ steps.meta.outputs.artifact }}
+          BASE_VERSION: ${{ steps.meta.outputs.base_version }}
+          RC_NUMBER: ${{ steps.meta.outputs.rc_number }}
+          IS_RC: ${{ steps.meta.outputs.is_rc }}
+        run: |
+          set -euo pipefail
+          {
+            if [[ "$IS_RC" == "true" ]]; then
+              printf 'Release candidate %s for version `%s`.\n\n' "$RC_NUMBER" "$BASE_VERSION"
+              printf 'This is **not** a released version. It is the source artifact for the Apache release vote.\n\n'
+            else
+              printf 'Version `%s`.\n\n' "$BASE_VERSION"
+            fi
+            printf '| Asset | Description |\n| --- | --- |\n'
+            printf '| `%s.tar.gz` | Source release |\n' "$ARTIFACT"
+            printf '| `%s.tar.gz.sha512` | SHA-512 checksum |\n\n' "$ARTIFACT"
+            if [[ "$IS_RC" == "true" ]]; then
+              printf 'The release manager signs the tarball locally with their own GPG key before starting the vote.\n'
+            else
+              printf 'The npm package is published as `typeorm-adapter@%s`.\n' "$BASE_VERSION"
+            fi
+          } > release-notes.md
+          cat release-notes.md
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          BASE_VERSION: ${{ steps.meta.outputs.base_version }}
+          RC_NUMBER: ${{ steps.meta.outputs.rc_number }}
+          IS_RC: ${{ steps.meta.outputs.is_rc }}
+        run: |
+          set -euo pipefail
+          if [[ "$IS_RC" == "true" ]]; then
+            TITLE="v${BASE_VERSION}-rc${RC_NUMBER} (release candidate)"
+            # A candidate is never "latest" - it has not been voted on yet.
+            KIND=(--prerelease --latest=false)
+          else
+            TITLE="v${BASE_VERSION}"
+            KIND=(--latest)
+          fi
+
+          # Idempotent, so a re-run after a failure further down still works.
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists, updating it."
+            gh release edit "$TAG" --title "$TITLE" --notes-file release-notes.md "${KIND[@]}"
+            gh release upload "$TAG" dist-release/* --clobber
+          else
+            gh release create "$TAG" --title "$TITLE" --notes-file release-notes.md "${KIND[@]}" dist-release/*
+          fi
+
+      - name: Publish to npm
+        if: steps.meta.outputs.is_rc == 'false'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          BASE_VERSION: ${{ steps.meta.outputs.base_version }}
+        run: |
+          set -euo pipefail
+          if npm view "typeorm-adapter@${BASE_VERSION}" version >/dev/null 2>&1; then
+            echo "typeorm-adapter@${BASE_VERSION} is already on npm, nothing to publish."
+            exit 0
+          fi
+          yarn install --frozen-lockfile
+          # The tag is the source of truth for the version, not package.json.
+          npm version "$BASE_VERSION" --no-git-tag-version --allow-same-version
+          yarn run lint
+          yarn run build
+          npm publish --access public
