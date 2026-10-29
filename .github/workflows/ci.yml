@@ -75,6 +75,12 @@ jobs:
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build || true
+      - name: Start Redis cluster (redis-watcher cluster tests use port 7000)
+        run: |
+          docker run -d --name redis-cluster -p 7000-7005:7000-7005 grokzen/redis-cluster:7.0
+          for i in $(seq 1 30); do
+            docker exec redis-cluster redis-cli -p 7000 ping >/dev/null 2>&1 && break || sleep 2
+          done
       - name: Run redis/mysql dependent package tests
         run: >
           pnpm --filter casbin-redis-adapter

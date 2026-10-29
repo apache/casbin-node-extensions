@@ -26,7 +26,9 @@
       "@types/express-serve-static-core": "4.17.21",
       "casbin-express-authz>@types/express": "4.17.12",
       "casbin-redis-adapter>typescript": "4.2.4",
-      "casbin-redis-adapter>@types/node": "14.14.41"
+      "casbin-redis-adapter>@types/node": "14.14.41",
+      "@babel/core": "7.25.9",
+      "@babel/parser": "7.25.9"
     }
   },
   "packageManager": "pnpm@10.31.0"
