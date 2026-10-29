@@ -1,0 +1,14 @@
+{
+  "name": "casbin-node-extensions",
+  "private": true,
+  "description": "Apache Casbin Node.js extensions monorepo (adapters, watchers, middlewares, utils)",
+  "license": "Apache-2.0",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  },
+  "devDependencies": {
+    "@changesets/cli": "^2.27.0"
+  }
+}
