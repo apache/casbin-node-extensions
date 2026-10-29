@@ -77,7 +77,7 @@ jobs:
       - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build || true
       - name: Start Redis cluster (redis-watcher cluster tests use port 7000)
         run: |
-          docker run -d --name redis-cluster -p 7000-7005:7000-7005 grokzen/redis-cluster:7.0
+          docker run -d --name redis-cluster -p 7000-7005:7000-7005 grokzen/redis-cluster:7.2.5
           for i in $(seq 1 30); do
             docker exec redis-cluster redis-cli -p 7000 ping >/dev/null 2>&1 && break || sleep 2
           done

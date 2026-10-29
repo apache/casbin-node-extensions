@@ -15,7 +15,8 @@
   "scripts": {
     "tsc": "tsc",
     "tsc-watch": "tsc -w",
-    "test": "lab --sourcemaps --transform node_modules/lab-transform-typescript -a @hapi/code"
+    "test": "lab --sourcemaps --transform node_modules/lab-transform-typescript -a @hapi/code",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "romitkarmakar<romitkarmakar@gmail.com>",
