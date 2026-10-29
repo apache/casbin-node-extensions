@@ -6,7 +6,7 @@
   "typings": "lib/cjs/index.d.ts",
   "module": "lib/esm/index.js",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/node-casbin/mongoose-adapter",
+  "homepage": "https://github.com/apache/casbin-node-extensions/tree/main/packages/adapters/mongoose-adapter#readme",
   "author": {
     "name": "Node-Casbin"
   },
@@ -19,10 +19,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/node-casbin/mongoose-adapter.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/adapters/mongoose-adapter"
   },
   "bugs": {
-    "url": "https://github.com/node-casbin/mongoose-adapter/issues"
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
   "keywords": [
     "casbin",

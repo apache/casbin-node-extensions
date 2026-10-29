@@ -48,7 +48,8 @@
   "homepage": "https://casbin.org",
   "repository": {
     "type": "git",
-    "url": "https://github.com/node-casbin/couchdb-adapter"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/adapters/couchdb-adapter"
   },
   "keywords": [
     "casbin",
@@ -72,7 +73,7 @@
     }
   ],
   "bugs": {
-    "url": "https://github.com/node-casbin/couchdb-adapter/issues"
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
   "lint-staged": {
     "*.{ts}": [

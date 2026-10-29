@@ -36,7 +36,8 @@
   "homepage": "http://casbin.org",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/node-casbin/pubsub-watcher.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/watchers/pubsub-watcher"
   },
   "licenses": [
     {
@@ -51,7 +52,7 @@
     ]
   },
   "bugs": {
-    "url": "https://github.com/node-casbin/pubsub-watcher/issues"
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
   "directories": {
     "example": "examples",

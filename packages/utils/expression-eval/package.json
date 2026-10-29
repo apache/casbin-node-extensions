@@ -9,7 +9,8 @@
   "types": "dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/node-casbin/expression-eval.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/utils/expression-eval"
   },
   "scripts": {
     "dev": "microbundle watch",
@@ -56,5 +57,8 @@
     "LICENSE",
     "package.json",
     "package-lock.json"
-  ]
+  ],
+  "bugs": {
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
+  }
 }

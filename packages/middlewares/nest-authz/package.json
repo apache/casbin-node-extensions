@@ -55,7 +55,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/node-casbin/nest-authz.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/middlewares/nest-authz"
   },
   "files": [
     "dist",
@@ -67,5 +68,8 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "bugs": {
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   }
 }

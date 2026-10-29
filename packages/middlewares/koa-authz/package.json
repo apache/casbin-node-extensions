@@ -19,7 +19,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/node-casbin/koa-authz.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/middlewares/koa-authz"
   },
   "author": {
     "name": "Chalin-Shi",
@@ -30,9 +31,9 @@
   },
   "license": "http://www.apache.org/licenses/LICENSE-2.0",
   "bugs": {
-    "url": "https://github.com/node-casbin/koa-authz/issues"
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
-  "homepage": "https://github.com/node-casbin/koa-authz#readme",
+  "homepage": "https://github.com/apache/casbin-node-extensions/tree/main/packages/middlewares/koa-authz#readme",
   "dependencies": {},
   "devDependencies": {
     "casbin": "^3.0.0",

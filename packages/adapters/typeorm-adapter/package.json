@@ -52,7 +52,8 @@
   "homepage": "https://casbin.apache.org",
   "repository": {
     "type": "git",
-    "url": "https://github.com/apache/casbin-typeorm-adapter.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/adapters/typeorm-adapter"
   },
   "keywords": [
     "casbin",
@@ -76,7 +77,7 @@
     }
   ],
   "bugs": {
-    "url": "https://github.com/apache/casbin-typeorm-adapter/issues"
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

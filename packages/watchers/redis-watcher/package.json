@@ -50,7 +50,8 @@
   "homepage": "http://casbin.org",
   "repository": {
     "type": "git",
-    "url": "https://github.com/node-casbin/redis-watcher.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/watchers/redis-watcher"
   },
   "licenses": [
     {
@@ -66,5 +67,8 @@
       "prettier --write",
       "git add"
     ]
+  },
+  "bugs": {
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   }
 }

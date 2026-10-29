@@ -70,5 +70,13 @@
       "json",
       "node"
     ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/adapters/basic-adapter"
+  },
+  "bugs": {
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   }
 }

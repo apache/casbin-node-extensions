@@ -5,17 +5,18 @@
   "main": "lib/cjs/watcher.js",
   "typings": "lib/cjs/watcher.d.ts",
   "module": "lib/esm/watcher.js",
-  "homepage": "https://github.com/node-casbin/mongo-changestream-watcher",
+  "homepage": "https://github.com/apache/casbin-node-extensions/tree/main/packages/watchers/mongo-changestream-watcher#readme",
   "directories": {
     "example": "examples",
     "test": "test"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/node-casbin/mongo-changestream-watcher.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/watchers/mongo-changestream-watcher"
   },
   "bugs": {
-    "url": "https://github.com/node-casbin/mongo-changestream-watcher/issues"
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
   "publishConfig": {
     "tag": "latest",

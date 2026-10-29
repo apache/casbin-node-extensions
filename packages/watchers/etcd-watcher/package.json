@@ -39,7 +39,8 @@
   "homepage": "http://casbin.org",
   "repository": {
     "type": "git",
-    "url": "https://github.com/node-casbin/etcd-watcher.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/watchers/etcd-watcher"
   },
   "publishConfig": {
     "access": "public"
@@ -55,5 +56,8 @@
       "prettier --write",
       "git add"
     ]
+  },
+  "bugs": {
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   }
 }
