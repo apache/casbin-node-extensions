@@ -1,0 +1,24 @@
+{
+  "name": "node-casbin-data-permission",
+  "version": "1.0.0",
+  "description": "A simple example using node-casbin with TypeScript",
+  "main": "index.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "ts-node index.ts"
+  },
+  "dependencies": {
+    "@types/sequelize": "^4.28.15",
+    "casbin": "^5.26.1",
+    "sequelize": "^6.31.1",
+    "sequelize-typescript": "^2.1.5",
+    "sqlite3": "^5.1.6"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.1",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.2"
+  }
+}
