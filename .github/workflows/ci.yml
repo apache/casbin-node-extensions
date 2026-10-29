@@ -92,13 +92,20 @@ jobs:
           docker exec mysql8 mysql -uroot -proot -e "SELECT VERSION();"
       - name: Start Redis cluster (redis-watcher cluster tests use port 7000)
         run: |
-          docker run -d --name redis-cluster -p 7000-7005:7000-7005 grokzen/redis-cluster:7.2.5
-          for i in $(seq 1 45); do
-            state=$(docker exec redis-cluster redis-cli -p 7000 cluster info 2>/dev/null | grep cluster_state || true)
-            echo "$state" | grep -q "cluster_state:ok" && break
+          for port in 7000 7001 7002; do
+            docker run -d --name redis-node-$port --network host redis:7 redis-server \
+              --port $port --cluster-enabled yes --cluster-config-file nodes-$port.conf \
+              --cluster-node-timeout 5000 --cluster-announce-ip 127.0.0.1 \
+              --cluster-announce-port $port --cluster-announce-bus-port 1$port
+          done
+          sleep 3
+          docker run --rm --network host redis:7 redis-cli --cluster create \
+            127.0.0.1:7000 127.0.0.1:7001 127.0.0.1:7002 --cluster-replicas 0 --cluster-yes
+          for i in $(seq 1 30); do
+            docker run --rm --network host redis:7 redis-cli -p 7000 cluster info 2>/dev/null | grep -q "cluster_state:ok" && break
             sleep 2
           done
-          docker exec redis-cluster redis-cli -p 7000 cluster info | grep cluster_state
+          docker run --rm --network host redis:7 redis-cli -p 7000 cluster info | grep cluster_state
       - name: Wait for SQL Server
         run: |
           for i in $(seq 1 45); do
