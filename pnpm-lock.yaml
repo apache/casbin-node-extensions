@@ -21,6 +21,7 @@ overrides:
   casbin-redis-adapter>@types/node: 14.14.41
   '@babel/core': 7.25.9
   '@babel/parser': 7.25.9
+  casbin-redis-adapter>casbin: 5.9.0
 
 importers:
 
@@ -428,11 +429,14 @@ importers:
         specifier: ^2.8.28
         version: 2.8.32
       casbin:
-        specifier: ^5.9.0
-        version: 5.51.1
+        specifier: 5.9.0
+        version: 5.9.0
       jest:
         specifier: ^27.0.5
         version: 27.5.1(node-notifier@8.0.2)(ts-node@10.9.2(@types/node@14.14.41)(typescript@4.2.4))
+      jest-environment-node:
+        specifier: ^27.5.1
+        version: 27.5.1
       npm-run-all:
         specifier: ^4.1.5
         version: 4.1.5
@@ -5314,6 +5318,9 @@ packages:
   casbin@5.6.1:
     resolution: {integrity: sha512-WFroyV4dkEoA3YwzFThefK2zbMpJUqf+gO6ReG0BVanOd/Du/CWUy0VAQvz1WO2JNHo5Lgr8jtEYpj4/Hvk/7g==}
 
+  casbin@5.9.0:
+    resolution: {integrity: sha512-CS4LbDtwMFmQ9tMQ0DMJYasW9GIrZ1gGPuAMCutw8bowkyHND3LHmgOYB3pPGYKKMjZ1K57MdB6TKvW8z8YJaw==}
+
   caseless@0.12.0:
     resolution: {integrity: sha512-4tYFyifaFfGacoiObjJegolkwSU4xQNGbVgUiNYVUxbQ2x2lUsFvY4hVgVzGiIe6WLOPqycWXA40l+PWsxthUw==}
 
@@ -7380,6 +7387,10 @@ packages:
 
   expression-eval@2.1.0:
     resolution: {integrity: sha512-FUJO/Akvl/JOWkvlqZaqbkhsEWlCJWDeZG4tzX96UH68D9FeRgYgtb55C2qtqbORC0Q6x5419EDjWu4IT9kQfg==}
+    deprecated: The expression-eval npm package is no longer maintained. The package was originally published as part of a now-completed personal project, and I do not have incentives to continue maintenance.
+
+  expression-eval@4.0.0:
+    resolution: {integrity: sha512-YHSnLTyIb9IKaho2IdQbvlei/pElxnGm48UgaXJ1Fe5au95Ck0R9ftm6rHJQuKw3FguZZ4eXVllJFFFc7LX0WQ==}
     deprecated: The expression-eval npm package is no longer maintained. The package was originally published as part of a now-completed personal project, and I do not have incentives to continue maintenance.
 
   expression-eval@5.0.1:
@@ -17691,9 +17702,7 @@ snapshots:
       source-map: 0.6.1
       string-length: 2.0.0
     transitivePeerDependencies:
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@jest/reporters@25.5.1':
     dependencies:
@@ -22042,6 +22051,13 @@ snapshots:
       ip: 1.1.9
       micromatch: 4.0.8
 
+  casbin@5.9.0:
+    dependencies:
+      await-lock: 2.2.2
+      csv-parse: 4.16.3
+      expression-eval: 4.0.0
+      picomatch: 2.3.2
+
   caseless@0.12.0: {}
 
   catharsis@0.9.0:
@@ -24984,6 +25000,10 @@ snapshots:
       - supports-color
 
   expression-eval@2.1.0:
+    dependencies:
+      jsep: 0.3.5
+
+  expression-eval@4.0.0:
     dependencies:
       jsep: 0.3.5
 
@@ -28242,9 +28262,7 @@ snapshots:
       pretty-format: 24.9.0
       throat: 4.1.0
     transitivePeerDependencies:
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   jest-jasmine2@25.5.4:
     dependencies:

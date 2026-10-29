@@ -28,7 +28,8 @@
       "casbin-redis-adapter>typescript": "4.2.4",
       "casbin-redis-adapter>@types/node": "14.14.41",
       "@babel/core": "7.25.9",
-      "@babel/parser": "7.25.9"
+      "@babel/parser": "7.25.9",
+      "casbin-redis-adapter>casbin": "5.9.0"
     }
   },
   "packageManager": "pnpm@10.31.0"
