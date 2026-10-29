@@ -12,7 +12,7 @@ jobs:
         with:
           node-version: 18
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
-      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm install --frozen-lockfile
       - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build
 
   test-unit:
@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 18
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
-      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm install --frozen-lockfile
       - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build || true
       - name: Run service-free package tests
         run: >
@@ -73,7 +73,7 @@ jobs:
         with:
           node-version: 18
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
-      - run: pnpm install --frozen-lockfile --ignore-scripts
+      - run: pnpm install --frozen-lockfile
       - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build || true
       - name: Run redis/mysql dependent package tests
         run: >
