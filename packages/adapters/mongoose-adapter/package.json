@@ -1,0 +1,105 @@
+{
+  "name": "casbin-mongoose-adapter",
+  "version": "5.6.1",
+  "description": "Mongoose adapter for Casbin",
+  "main": "lib/cjs/index.js",
+  "typings": "lib/cjs/index.d.ts",
+  "module": "lib/esm/index.js",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/node-casbin/mongoose-adapter",
+  "author": {
+    "name": "Node-Casbin"
+  },
+  "contributors": [
+    {
+      "name": "Eugene Obrezkov",
+      "email": "ghaiklor@gmail.com",
+      "url": "https://ghaiklor.com"
+    }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/node-casbin/mongoose-adapter.git"
+  },
+  "bugs": {
+    "url": "https://github.com/node-casbin/mongoose-adapter/issues"
+  },
+  "keywords": [
+    "casbin",
+    "node-casbin",
+    "adapter",
+    "mongoose",
+    "access-control",
+    "authorization",
+    "auth",
+    "authz",
+    "acl",
+    "rbac",
+    "abac",
+    "orm"
+  ],
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "publishConfig": {
+    "tag": "latest",
+    "registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "prepublishOnly": "npm run lint",
+    "test:integration": "nyc mocha -- --config test/integration/.mocharc.js",
+    "test:unit": "nyc mocha -- --config test/unit/.mocharc.js",
+    "tests": "run-s build && run-s test:*",
+    "coverage": "nyc mocha -- --config test/.mocharc.js",
+    "postpack": "run-s clean",
+    "build": "run-s clean && run-p build:*",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "clean": "rimraf lib",
+    "prepare": "npm run build"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.6",
+    "@typescript-eslint/eslint-plugin": "^6.19.1",
+    "casbin": "^5.28.0",
+    "chai": "^4.3.0",
+    "coveralls": "^3.1.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "eslint": "^7.20.0",
+    "eslint-config-standard": "^16.0.2",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.3.1",
+    "eslint-plugin-standard": "^5.0.0",
+    "husky": "^5.0.9",
+    "jsdoc-to-markdown": "^6.0.1",
+    "mocha": "^8.3.0",
+    "npm-run-all": "^4.1.5",
+    "nyc": "^15.1.0",
+    "sinon": "^9.0.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "mongoose": "^8.1.1"
+  },
+  "peerDependencies": {
+    "casbin": "^5.28.0"
+  },
+  "husky": {
+    "hooks": {
+      "prepare-commit-msg": "exec < /dev/tty && git cz --hook || true",
+      "pre-commit": "npm run lint"
+    }
+  },
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  },
+  "nyc": {
+    "reporter": [
+      "lcov"
+    ]
+  }
+}
