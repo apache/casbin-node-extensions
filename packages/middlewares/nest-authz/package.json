@@ -1,0 +1,71 @@
+{
+  "name": "nest-authz",
+  "version": "2.17.0",
+  "description": "Nest.js RBAC & ABAC authorization module based on Node-Casbin",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "engines": {
+    "node": ">= 10.13.0"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "clean": "rimraf dist",
+    "commit": "git-cz",
+    "build": "rimraf dist && tsc -p tsconfig.json",
+    "prepublish": "yarn lint && yarn build",
+    "style": "prettier --check \"src/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "tslint -p tsconfig.json -c tslint.json",
+    "release": "standard-version",
+    "test": "jest",
+    "coverage": "jest --coverage",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [],
+  "author": "dreamdevil00",
+  "license": "MIT",
+  "dependencies": {
+    "casbin": "^5.30.0"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^9.0.3",
+    "@nestjs/core": "^9.0.3",
+    "@types/jest": "24.9.0",
+    "@types/node": "11.15.50",
+    "commitizen": "4.2.4",
+    "cz-conventional-changelog": "3.3.0",
+    "jest": "24.9.0",
+    "prettier": "1.19.1",
+    "reflect-metadata": "^0.1.13 || ^0.2.0",
+    "rimraf": "3.0.1",
+    "rxjs": "^6.0.0",
+    "standard-version": "8.0.2",
+    "ts-jest": "24.3.0",
+    "ts-node": "10.0.0",
+    "tslint": "5.11.0",
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^9.0.3 || ^10.0.0",
+    "@nestjs/core": "^9.0.3 || ^10.0.0",
+    "reflect-metadata": "^0.1.13 || ^0.2.0",
+    "rxjs": "^7.5.6"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/node-casbin/nest-authz.git"
+  },
+  "files": [
+    "dist",
+    "src",
+    "LICENSE",
+    "README.md"
+  ],
+  "config": {
+    "commitizen": {
+      "path": "./node_modules/cz-conventional-changelog"
+    }
+  }
+}
