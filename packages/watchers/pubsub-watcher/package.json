@@ -20,6 +20,7 @@
     "casbin": "^5.1.2",
     "eslint": "^7.6.0",
     "jest": "^26.4.0",
+    "jest-environment-node": "^26.0.0",
     "lint-staged": "^10.2.11",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
@@ -36,7 +37,8 @@
   "homepage": "http://casbin.org",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/node-casbin/pubsub-watcher.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/watchers/pubsub-watcher"
   },
   "licenses": [
     {
@@ -51,7 +53,7 @@
     ]
   },
   "bugs": {
-    "url": "https://github.com/node-casbin/pubsub-watcher/issues"
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
   "directories": {
     "example": "examples",

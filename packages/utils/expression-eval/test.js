@@ -1,6 +1,6 @@
 require('source-map-support').install();
 
-const expr = require('./dist/expression-eval.js');
+const expr = require('./dist/index.js');
 
 const fixtures = [
 

@@ -15,13 +15,15 @@
   "scripts": {
     "tsc": "tsc",
     "tsc-watch": "tsc -w",
-    "test": "lab --sourcemaps --transform node_modules/lab-transform-typescript -a @hapi/code"
+    "test": "lab --sourcemaps --transform node_modules/lab-transform-typescript -a @hapi/code",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "romitkarmakar<romitkarmakar@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/node-casbin/hapi-authz.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/middlewares/hapi-authz"
   },
   "license": "Apache-2.0",
   "devDependencies": {
@@ -36,5 +38,8 @@
   },
   "publishConfig": {
     "registry": "https://registry.yarnpkg.com"
+  },
+  "bugs": {
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   }
 }

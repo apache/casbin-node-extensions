@@ -18,7 +18,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/node-casbin/session-role-manager.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/role-managers/session-role-manager"
   },
   "keywords": [
     "authorization",
@@ -34,7 +35,7 @@
     }
   ],
   "bugs": {
-    "url": "https://github.com/node-casbin/session-role-manager/issues"
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
   "homepage": "http://casbin.org",
   "devDependencies": {
@@ -43,8 +44,10 @@
     "@types/jest": "^25.2.3",
     "@types/node": "^14.0.2",
     "casbin": "^5.0.1",
+    "csv-parse": "^5",
     "husky": "^4.2.5",
     "jest": "^26.0.1",
+    "jest-environment-node": "^26.0.0",
     "prettier": "^2.0.5",
     "pretty-quick": "^2.0.1",
     "rimraf": "^3.0.2",

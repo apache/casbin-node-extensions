@@ -18,9 +18,11 @@
     "@types/bluebird": "^3.5.29",
     "@types/jest": "^24.0.11",
     "@types/node": "^10.5.3",
+    "abort-controller": "^3.0.0",
     "casbin": "^3.0.8",
     "coveralls": "^3.0.2",
     "jest": "^24.9.0",
+    "jest-environment-node": "^24.0.0",
     "lint-staged": "^8.1.7",
     "prettier": "^1.17.1",
     "rimraf": "^2.6.2",
@@ -39,7 +41,8 @@
   "homepage": "http://casbin.org",
   "repository": {
     "type": "git",
-    "url": "https://github.com/node-casbin/etcd-watcher.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/watchers/etcd-watcher"
   },
   "publishConfig": {
     "access": "public"
@@ -55,5 +58,8 @@
       "prettier --write",
       "git add"
     ]
+  },
+  "bugs": {
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   }
 }

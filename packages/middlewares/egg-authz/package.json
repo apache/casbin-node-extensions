@@ -11,7 +11,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/node-casbin/egg-authz.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/middlewares/egg-authz"
   },
   "keywords": [
     "node-casbin",
@@ -31,9 +32,9 @@
     "node": ">= 7.6.0"
   },
   "bugs": {
-    "url": "https://github.com/node-casbin/egg-authz/issues"
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
-  "homepage": "https://github.com/node-casbin/egg-authz#readme",
+  "homepage": "https://github.com/apache/casbin-node-extensions/tree/main/packages/middlewares/egg-authz#readme",
   "publishConfig": {
     "registry": "https://registry.yarnpkg.com/"
   },

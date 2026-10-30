@@ -1,4 +1,5 @@
 module.exports = {
+  setupFiles: ['<rootDir>/test/setup-globals.js'],
   testEnvironment: 'node',
   transform: {
     '^.+\\.(ts|tsx)$': 'ts-jest'

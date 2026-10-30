@@ -6,7 +6,7 @@
   "typings": "lib/cjs/index.d.ts",
   "module": "lib/esm/index.js",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/node-casbin/mongoose-adapter",
+  "homepage": "https://github.com/apache/casbin-node-extensions/tree/main/packages/adapters/mongoose-adapter#readme",
   "author": {
     "name": "Node-Casbin"
   },
@@ -19,10 +19,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/node-casbin/mongoose-adapter.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/adapters/mongoose-adapter"
   },
   "bugs": {
-    "url": "https://github.com/node-casbin/mongoose-adapter/issues"
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
   "keywords": [
     "casbin",
@@ -53,11 +54,12 @@
     "tests": "run-s build && run-s test:*",
     "coverage": "nyc mocha -- --config test/.mocharc.js",
     "postpack": "run-s clean",
-    "build": "run-s clean && run-p build:*",
+    "build": "rimraf lib && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "clean": "rimraf lib",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "npm run test:unit && npm run test:integration"
   },
   "devDependencies": {
     "@types/node": "^20.11.6",
@@ -78,7 +80,8 @@
     "npm-run-all": "^4.1.5",
     "nyc": "^15.1.0",
     "sinon": "^9.0.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "rimraf": "^5.0.5"
   },
   "dependencies": {
     "mongoose": "^8.1.1"

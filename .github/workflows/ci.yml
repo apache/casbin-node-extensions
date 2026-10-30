@@ -1,0 +1,234 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build
+
+  test-unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build || true
+      - name: Run service-free package tests
+        run: >
+          pnpm --filter casbin-file-adapter
+          --filter @casbin/expression-eval
+          --filter session-role-manager
+          --filter casbin-express-authz
+          --filter koa-authz
+          --filter nest-authz
+          --filter @casbin/hapi-authz
+          --filter egg-authz
+          --filter typeorm-adapter
+          --filter drizzle-adapter
+          --no-bail test
+
+  test-services:
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: casbin
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "Passw0rd"
+        ports: ["1433:1433"]
+    env:
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DB: casbin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build || true
+      - name: Start MySQL (native auth plugin for legacy mysql@2 client)
+        run: |
+          docker run -d --name mysql8 -p 3306:3306 \
+            -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=casbin \
+            mysql:8.0 --default-authentication-plugin=mysql_native_password
+          for i in $(seq 1 90); do
+            docker exec mysql8 mysql -uroot -proot -e "SELECT 1" >/dev/null 2>&1 && break
+            sleep 2
+          done
+          docker exec mysql8 mysql -uroot -proot -e "SELECT VERSION();"
+          docker exec mysql8 mysql -uroot -proot -e "
+            CREATE USER IF NOT EXISTS 'casbin'@'%' IDENTIFIED WITH mysql_native_password BY 'password';
+            GRANT ALL PRIVILEGES ON casbin.* TO 'casbin'@'%';
+            FLUSH PRIVILEGES;"
+      - name: Start Redis cluster (redis-watcher cluster tests use port 7000)
+        run: |
+          for port in 7000 7001 7002; do
+            docker run -d --name redis-node-$port --network host redis:7 redis-server \
+              --port $port --cluster-enabled yes --cluster-config-file nodes-$port.conf \
+              --cluster-node-timeout 5000 --cluster-announce-ip 127.0.0.1 \
+              --cluster-announce-port $port --cluster-announce-bus-port 1$port
+          done
+          sleep 3
+          docker run --rm --network host redis:7 redis-cli --cluster create \
+            127.0.0.1:7000 127.0.0.1:7001 127.0.0.1:7002 --cluster-replicas 0 --cluster-yes
+          for i in $(seq 1 30); do
+            docker run --rm --network host redis:7 redis-cli -p 7000 cluster info 2>/dev/null | grep -q "cluster_state:ok" && break
+            sleep 2
+          done
+          docker run --rm --network host redis:7 redis-cli -p 7000 cluster info | grep cluster_state
+      - name: Wait for SQL Server
+        run: |
+          for i in $(seq 1 45); do
+            timeout 1 bash -c '</dev/tcp/127.0.0.1/1433' 2>/dev/null && break
+            sleep 2
+          done
+          sleep 5
+      - name: Run redis/mysql/pg/mssql dependent package tests
+        run: >
+          pnpm --workspace-concurrency=1
+          --filter casbin-redis-adapter
+          --filter @casbin/redis-watcher
+          --filter casbin-basic-adapter
+          --filter casbin-sequelize-adapter
+          --no-bail test
+
+  test-mongo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter casbin-mongoose-adapter --filter @casbin/mongo-changestream-watcher --no-bail build
+      - name: Start MongoDB replica set rs0 (tests use ports 27001/27002)
+        run: |
+          for port in 27001 27002; do
+            docker run -d --name mongo-$port --network host mongo:7 \
+              mongod --port $port --replSet rs0 --bind_ip 127.0.0.1 --dbpath /data/db
+          done
+          sleep 8
+          docker exec mongo-27001 mongosh --quiet --port 27001 --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"127.0.0.1:27001",priority:2},{_id:1,host:"127.0.0.1:27002",priority:1}]})' || true
+          for i in $(seq 1 60); do
+            ok=$(docker exec mongo-27001 mongosh --quiet --port 27001 --eval 'db.hello().isWritablePrimary' 2>/dev/null || true)
+            [ "$ok" = "true" ] && break
+            sleep 2
+          done
+          docker exec mongo-27001 mongosh --quiet --port 27001 --eval 'rs.status().members.map(m => m.name + "=" + m.stateStr).join(", ")'
+      - name: Run mongo dependent package tests
+        run: pnpm --workspace-concurrency=1 --filter casbin-mongoose-adapter --filter @casbin/mongo-changestream-watcher --no-bail test
+
+  test-misc:
+    runs-on: ubuntu-latest
+    env:
+      PUBSUB_EMULATOR_HOST: localhost:8085
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter casbin-couchdb-adapter --filter @casbin/etcd-watcher --filter @casbin/pubsub-watcher --no-bail build
+      - name: Start CouchDB (admin/123456 on 5984)
+        run: |
+          docker run -d --name couchdb --network host \
+            -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=123456 -e COUCHDB_SINGLE_NODE=true \
+            couchdb:3
+          for i in $(seq 1 60); do
+            curl -sf http://admin:123456@127.0.0.1:5984/ >/dev/null && break
+            sleep 2
+          done
+          curl -sf http://admin:123456@127.0.0.1:5984/ | head -c 100; echo
+          curl -sf -X PUT http://admin:123456@127.0.0.1:5984/casbin; echo
+          curl -sf -X PUT http://admin:123456@127.0.0.1:5984/casbin/policies -d '{ "_id":"policies", "value":[] }'; echo
+      - name: Start etcd (2379)
+        run: |
+          docker run -d --name etcd --network host gcr.io/etcd-development/etcd:v3.5.17
+          for i in $(seq 1 45); do
+            curl -sf http://127.0.0.1:2379/health >/dev/null && break
+            sleep 2
+          done
+          curl -sf http://127.0.0.1:2379/health; echo
+      - name: Start GCP Pub/Sub emulator (8085)
+        run: |
+          docker run -d --name pubsub-emulator --network host \
+            gcr.io/google.com/cloudsdktool/cloud-sdk:emulators \
+            gcloud beta emulators pubsub start --host-port=127.0.0.1:8085
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:8085/ >/dev/null && break
+            sleep 2
+          done
+          echo "pubsub emulator up"
+      - name: Run couchdb/etcd/pubsub dependent package tests
+        run: >
+          pnpm --workspace-concurrency=1
+          --filter casbin-couchdb-adapter
+          --filter @casbin/etcd-watcher
+          --filter @casbin/pubsub-watcher
+          --no-bail test
+
+  test-prisma:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: casbin
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter casbin-prisma-adapter build
+      - name: Push prisma schema (create casbin_rule table)
+        run: pnpm --filter casbin-prisma-adapter exec prisma db push
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/casbin
+      - name: Run prisma-adapter tests
+        run: pnpm --workspace-concurrency=1 --filter casbin-prisma-adapter test

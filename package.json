@@ -10,5 +10,28 @@
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0"
-  }
+  },
+  "pnpm": {
+    "overrides": {
+      "casbin-basic-adapter>typescript": "5.1.6",
+      "casbin-basic-adapter>@types/node": "20.5.0",
+      "casbin-file-adapter>casbin": "5.6.1",
+      "casbin-file-adapter>typescript": "4.2.4",
+      "casbin-file-adapter>@types/node": "15.0.1",
+      "nest-authz>casbin": "5.30.0",
+      "nest-authz>typescript": "5.5.3",
+      "nest-authz>@types/node": "11.15.50",
+      "@casbin/etcd-watcher>casbin": "3.0.8",
+      "@casbin/redis-watcher>casbin": "5.2.1",
+      "@types/express-serve-static-core": "4.17.21",
+      "casbin-express-authz>@types/express": "4.17.12",
+      "casbin-redis-adapter>typescript": "4.2.4",
+      "casbin-redis-adapter>@types/node": "14.14.41",
+      "@babel/core": "7.25.9",
+      "@babel/parser": "7.25.9",
+      "casbin-redis-adapter>casbin": "5.9.0",
+      "@casbin/pubsub-watcher>casbin": "5.1.2"
+    }
+  },
+  "packageManager": "pnpm@10.31.0"
 }

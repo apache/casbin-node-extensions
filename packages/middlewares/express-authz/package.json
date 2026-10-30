@@ -27,7 +27,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/node-casbin/express-authz.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/middlewares/express-authz"
   },
   "author": {
     "name": "Chalin-Shi",
@@ -38,9 +39,9 @@
   },
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/node-casbin/express-authz/issues"
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
-  "homepage": "https://github.com/node-casbin/express-authz#readme",
+  "homepage": "https://github.com/apache/casbin-node-extensions/tree/main/packages/middlewares/express-authz#readme",
   "peerDependencies": {
     "express": "^4.16.3",
     "casbin": "^4.5.0"

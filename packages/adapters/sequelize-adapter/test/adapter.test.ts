@@ -36,9 +36,9 @@ test(
   'TestAdapter',
   async () => {
     const a = await SequelizeAdapter.newAdapter({
-      username: 'root',
-      password: '',
-      database: 'casbin',
+      username: process.env.MYSQL_USER || 'root',
+      password: process.env.MYSQL_PASSWORD || 'root',
+      database: process.env.MYSQL_DB || 'casbin',
       dialect: 'mysql',
       tableName: 'something',
     });

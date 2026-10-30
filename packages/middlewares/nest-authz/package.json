@@ -35,8 +35,10 @@
     "@types/jest": "24.9.0",
     "@types/node": "11.15.50",
     "commitizen": "4.2.4",
+    "csv-parse": "^5",
     "cz-conventional-changelog": "3.3.0",
     "jest": "24.9.0",
+    "jest-environment-node": "^24.0.0",
     "prettier": "1.19.1",
     "reflect-metadata": "^0.1.13 || ^0.2.0",
     "rimraf": "3.0.1",
@@ -55,7 +57,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/node-casbin/nest-authz.git"
+    "url": "git+https://github.com/apache/casbin-node-extensions.git",
+    "directory": "packages/middlewares/nest-authz"
   },
   "files": [
     "dist",
@@ -67,5 +70,8 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
+  },
+  "bugs": {
+    "url": "https://github.com/apache/casbin-node-extensions/issues"
   }
 }
