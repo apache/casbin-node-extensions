@@ -2,6 +2,7 @@
   "name": "@casbin/etcd-watcher",
   "version": "1.0.1",
   "description": "Etcd watcher for node-casbin",
+  "license": "Apache-2.0",
   "main": "lib/watcher.js",
   "typings": "lib/watcher.d.ts",
   "scripts": {

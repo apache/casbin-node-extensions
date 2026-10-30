@@ -2,6 +2,7 @@
   "name": "koa-authz",
   "version": "3.0.2",
   "description": "koa-authz is an authorization middleware for Koa",
+  "license": "Apache-2.0",
   "main": "authz.js",
   "scripts": {
     "prepublish": "npm run lint && npm run test",
@@ -29,7 +30,6 @@
   "engines": {
     "node": ">= 7.6.0"
   },
-  "license": "http://www.apache.org/licenses/LICENSE-2.0",
   "bugs": {
     "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
