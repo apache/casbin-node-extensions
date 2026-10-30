@@ -58,7 +58,8 @@
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "clean": "rimraf lib",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "test": "run-s test:unit test:integration"
   },
   "devDependencies": {
     "@types/node": "^20.11.6",

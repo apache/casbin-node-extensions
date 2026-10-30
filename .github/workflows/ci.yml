@@ -54,6 +54,7 @@ jobs:
         image: postgres:16
         env:
           POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: casbin
         ports: ["5432:5432"]
         options: >-
           --health-cmd "pg_isready -U postgres"
@@ -124,3 +125,102 @@ jobs:
           --filter casbin-basic-adapter
           --filter casbin-sequelize-adapter
           --no-bail test
+
+  test-mongo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter casbin-mongoose-adapter --filter @casbin/mongo-changestream-watcher --no-bail build
+      - name: Start MongoDB replica set rs0 (tests use ports 27001/27002)
+        run: |
+          for port in 27001 27002; do
+            docker run -d --name mongo-$port --network host mongo:7 \
+              mongod --port $port --replSet rs0 --bind_ip 127.0.0.1 --dbpath /data/db
+          done
+          sleep 8
+          docker exec mongo-27001 mongosh --quiet --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"127.0.0.1:27001",priority:2},{_id:1,host:"127.0.0.1:27002",priority:1}]})' || true
+          for i in $(seq 1 60); do
+            ok=$(docker exec mongo-27001 mongosh --quiet --eval 'db.hello().isWritablePrimary' 2>/dev/null || true)
+            [ "$ok" = "true" ] && break
+            sleep 2
+          done
+          docker exec mongo-27001 mongosh --quiet --eval 'rs.status().members.map(m => m.name + "=" + m.stateStr).join(", ")'
+      - name: Run mongo dependent package tests
+        run: pnpm --filter casbin-mongoose-adapter --filter @casbin/mongo-changestream-watcher --no-bail test
+
+  test-misc:
+    runs-on: ubuntu-latest
+    env:
+      PUBSUB_EMULATOR_HOST: localhost:8085
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter casbin-couchdb-adapter --filter @casbin/etcd-watcher --filter @casbin/pubsub-watcher --no-bail build
+      - name: Start CouchDB (admin/123456 on 5984)
+        run: |
+          docker run -d --name couchdb --network host \
+            -e COUCHDB_USER=admin -e COUCHDB_PASSWORD=123456 -e COUCHDB_SINGLE_NODE=true \
+            couchdb:3
+          for i in $(seq 1 60); do
+            curl -sf http://admin:123456@127.0.0.1:5984/ >/dev/null && break
+            sleep 2
+          done
+          curl -sf http://admin:123456@127.0.0.1:5984/ | head -c 100; echo
+      - name: Start etcd (2379)
+        run: |
+          docker run -d --name etcd --network host gcr.io/etcd-development/etcd:v3.5.17
+          for i in $(seq 1 45); do
+            curl -sf http://127.0.0.1:2379/health >/dev/null && break
+            sleep 2
+          done
+          curl -sf http://127.0.0.1:2379/health; echo
+      - name: Start GCP Pub/Sub emulator (8085)
+        run: |
+          docker run -d --name pubsub-emulator --network host \
+            gcr.io/google.com/cloudsdktool/cloud-sdk:emulators \
+            gcloud beta emulators pubsub start --host-port=127.0.0.1:8085
+          for i in $(seq 1 60); do
+            curl -sf http://127.0.0.1:8085/ >/dev/null && break
+            sleep 2
+          done
+          echo "pubsub emulator up"
+      - name: Run couchdb/etcd/pubsub dependent package tests
+        run: >
+          pnpm --filter casbin-couchdb-adapter
+          --filter @casbin/etcd-watcher
+          --filter @casbin/pubsub-watcher
+          --no-bail test
+
+  test-prisma:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: casbin
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter casbin-prisma-adapter build
+      - name: Run prisma-adapter tests
+        run: pnpm --filter casbin-prisma-adapter test
