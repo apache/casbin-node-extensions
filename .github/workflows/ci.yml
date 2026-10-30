@@ -120,7 +120,8 @@ jobs:
           sleep 5
       - name: Run redis/mysql/pg/mssql dependent package tests
         run: >
-          pnpm --filter casbin-redis-adapter
+          pnpm --workspace-concurrency=1
+          --filter casbin-redis-adapter
           --filter @casbin/redis-watcher
           --filter casbin-basic-adapter
           --filter casbin-sequelize-adapter
@@ -151,7 +152,7 @@ jobs:
           done
           docker exec mongo-27001 mongosh --quiet --port 27001 --eval 'rs.status().members.map(m => m.name + "=" + m.stateStr).join(", ")'
       - name: Run mongo dependent package tests
-        run: pnpm --filter casbin-mongoose-adapter --filter @casbin/mongo-changestream-watcher --no-bail test
+        run: pnpm --workspace-concurrency=1 --filter casbin-mongoose-adapter --filter @casbin/mongo-changestream-watcher --no-bail test
 
   test-misc:
     runs-on: ubuntu-latest
@@ -197,7 +198,8 @@ jobs:
           echo "pubsub emulator up"
       - name: Run couchdb/etcd/pubsub dependent package tests
         run: >
-          pnpm --filter casbin-couchdb-adapter
+          pnpm --workspace-concurrency=1
+          --filter casbin-couchdb-adapter
           --filter @casbin/etcd-watcher
           --filter @casbin/pubsub-watcher
           --no-bail test
@@ -229,4 +231,4 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/casbin
       - name: Run prisma-adapter tests
-        run: pnpm --filter casbin-prisma-adapter test
+        run: pnpm --workspace-concurrency=1 --filter casbin-prisma-adapter test
