@@ -1,39 +1,43 @@
 # [1.3.0](https://github.com/node-casbin/mongo-changestream-watcher/compare/v1.2.0...v1.3.0) (2025-11-05)
 
+## 1.3.1
+
+### Patch Changes
+
+- First release from the apache/casbin-node-extensions monorepo.
+
+  The 23 source repositories were consolidated (full git history and tags
+  preserved). Future development and releases happen here; the old
+  repositories will be archived. See the README for the package map.
 
 ### Features
 
-* improve README badges ([#18](https://github.com/node-casbin/mongo-changestream-watcher/issues/18)) ([01980ad](https://github.com/node-casbin/mongo-changestream-watcher/commit/01980ada1551620066b48a147351b0cd41cff83b))
+- improve README badges ([#18](https://github.com/node-casbin/mongo-changestream-watcher/issues/18)) ([01980ad](https://github.com/node-casbin/mongo-changestream-watcher/commit/01980ada1551620066b48a147351b0cd41cff83b))
 
 # [1.2.0](https://github.com/node-casbin/mongo-changestream-watcher/compare/v1.1.1...v1.2.0) (2025-11-05)
 
-
 ### Features
 
-* upgrade all packages, upgrade mongodb to v6 ([#16](https://github.com/node-casbin/mongo-changestream-watcher/issues/16)) ([a7a737d](https://github.com/node-casbin/mongo-changestream-watcher/commit/a7a737d09afca813aa981d4b57496851ac175894))
+- upgrade all packages, upgrade mongodb to v6 ([#16](https://github.com/node-casbin/mongo-changestream-watcher/issues/16)) ([a7a737d](https://github.com/node-casbin/mongo-changestream-watcher/commit/a7a737d09afca813aa981d4b57496851ac175894))
 
 ## [1.1.1](https://github.com/node-casbin/mongo-changestream-watcher/compare/v1.1.0...v1.1.1) (2023-08-07)
 
-
 ### Bug Fixes
 
-* fix broken links ([#14](https://github.com/node-casbin/mongo-changestream-watcher/issues/14)) ([e5c3f76](https://github.com/node-casbin/mongo-changestream-watcher/commit/e5c3f76e30d528dcbba76f4ca040d99ed05e5cc8))
+- fix broken links ([#14](https://github.com/node-casbin/mongo-changestream-watcher/issues/14)) ([e5c3f76](https://github.com/node-casbin/mongo-changestream-watcher/commit/e5c3f76e30d528dcbba76f4ca040d99ed05e5cc8))
 
 # [1.1.0](https://github.com/node-casbin/mongo-changestream-watcher/compare/v1.0.0...v1.1.0) (2023-05-13)
 
-
 ### Features
 
-* add an option to wait for stream ready ([#9](https://github.com/node-casbin/mongo-changestream-watcher/issues/9)) ([9b03bbd](https://github.com/node-casbin/mongo-changestream-watcher/commit/9b03bbd9b5756e76a39e70b801c55eacf967f3be)), closes [#8](https://github.com/node-casbin/mongo-changestream-watcher/issues/8)
+- add an option to wait for stream ready ([#9](https://github.com/node-casbin/mongo-changestream-watcher/issues/9)) ([9b03bbd](https://github.com/node-casbin/mongo-changestream-watcher/commit/9b03bbd9b5756e76a39e70b801c55eacf967f3be)), closes [#8](https://github.com/node-casbin/mongo-changestream-watcher/issues/8)
 
 # 1.0.0 (2022-08-26)
 
-
 ### Bug Fixes
 
-* disable husky ([#4](https://github.com/node-casbin/mongo-changestream-watcher/issues/4)) ([959c89c](https://github.com/node-casbin/mongo-changestream-watcher/commit/959c89c6ca3be7f1e40feccdb3f5c850714a06b9)), closes [#2](https://github.com/node-casbin/mongo-changestream-watcher/issues/2)
-
+- disable husky ([#4](https://github.com/node-casbin/mongo-changestream-watcher/issues/4)) ([959c89c](https://github.com/node-casbin/mongo-changestream-watcher/commit/959c89c6ca3be7f1e40feccdb3f5c850714a06b9)), closes [#2](https://github.com/node-casbin/mongo-changestream-watcher/issues/2)
 
 ### Features
 
-* add MongoDB Change Stream Watcher for Node-Casbin ([#1](https://github.com/node-casbin/mongo-changestream-watcher/issues/1)) ([d5dbdee](https://github.com/node-casbin/mongo-changestream-watcher/commit/d5dbdee4a76b9a0399cc02d5b255780f270ae520))
+- add MongoDB Change Stream Watcher for Node-Casbin ([#1](https://github.com/node-casbin/mongo-changestream-watcher/issues/1)) ([d5dbdee](https://github.com/node-casbin/mongo-changestream-watcher/commit/d5dbdee4a76b9a0399cc02d5b255780f270ae520))

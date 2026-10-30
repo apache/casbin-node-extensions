@@ -23,6 +23,7 @@ overrides:
   '@babel/parser': 7.25.9
   casbin-redis-adapter>casbin: 5.9.0
   '@casbin/pubsub-watcher>casbin': 5.1.2
+  human-id: 1.0.2
 
 importers:
 
@@ -8332,9 +8333,8 @@ packages:
     resolution: {integrity: sha512-vK9P5/iUfdl95AI+JVyUuIcVtd4ofvtrOr3HNtM2yxC9bnMbEdp3x01OhQNnjb8IJYi38VlTE3mBXwcfvywuSw==}
     engines: {node: '>= 14'}
 
-  human-id@4.2.2:
-    resolution: {integrity: sha512-Z+8unD6em/MJwyrkWQ2M3wygRGI1+MztbutiNwk1DCuEPXOZRWGjtcMPZYP1exY9iNZMhd7ZOSMQSo9WYtiQRw==}
-    hasBin: true
+  human-id@1.0.2:
+    resolution: {integrity: sha512-UNopramDEhHJD+VR+ehk8rOslwSfByxPIZyJRfV739NDhN5LF1fa1MqnzKm2lGTQRjNrjK19Q5fhkgIfjlVUKw==}
 
   human-signals@1.1.1:
     resolution: {integrity: sha512-SEQu7vl8KjNL2eoGBLF3+wAjpsNfA9XMlXAYj/3EdaNfAlxKthD1xjEQfGOUhllCGGJVNY34bRr6lPINhNjyZw==}
@@ -16610,7 +16610,7 @@ snapshots:
     dependencies:
       '@changesets/types': 6.1.0
       fs-extra: 7.0.1
-      human-id: 4.2.2
+      human-id: 1.0.2
       prettier: 2.8.8
 
   '@cnakazawa/watch@1.0.4':
@@ -18069,7 +18069,10 @@ snapshots:
       jest-runner: 25.5.4
       jest-runtime: 25.5.4
     transitivePeerDependencies:
+      - bufferutil
+      - canvas
       - supports-color
+      - utf-8-validate
 
   '@jest/test-sequencer@26.6.3':
     dependencies:
@@ -26100,7 +26103,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  human-id@4.2.2: {}
+  human-id@1.0.2: {}
 
   human-signals@1.1.1: {}
 

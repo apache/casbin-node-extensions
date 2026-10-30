@@ -30,7 +30,8 @@
       "@babel/core": "7.25.9",
       "@babel/parser": "7.25.9",
       "casbin-redis-adapter>casbin": "5.9.0",
-      "@casbin/pubsub-watcher>casbin": "5.1.2"
+      "@casbin/pubsub-watcher>casbin": "5.1.2",
+      "human-id": "1.0.2"
     }
   },
   "packageManager": "pnpm@10.31.0"
