@@ -143,13 +143,13 @@ jobs:
               mongod --port $port --replSet rs0 --bind_ip 127.0.0.1 --dbpath /data/db
           done
           sleep 8
-          docker exec mongo-27001 mongosh --quiet --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"127.0.0.1:27001",priority:2},{_id:1,host:"127.0.0.1:27002",priority:1}]})' || true
+          docker exec mongo-27001 mongosh --quiet --port 27001 --eval 'rs.initiate({_id:"rs0",members:[{_id:0,host:"127.0.0.1:27001",priority:2},{_id:1,host:"127.0.0.1:27002",priority:1}]})' || true
           for i in $(seq 1 60); do
-            ok=$(docker exec mongo-27001 mongosh --quiet --eval 'db.hello().isWritablePrimary' 2>/dev/null || true)
+            ok=$(docker exec mongo-27001 mongosh --quiet --port 27001 --eval 'db.hello().isWritablePrimary' 2>/dev/null || true)
             [ "$ok" = "true" ] && break
             sleep 2
           done
-          docker exec mongo-27001 mongosh --quiet --eval 'rs.status().members.map(m => m.name + "=" + m.stateStr).join(", ")'
+          docker exec mongo-27001 mongosh --quiet --port 27001 --eval 'rs.status().members.map(m => m.name + "=" + m.stateStr).join(", ")'
       - name: Run mongo dependent package tests
         run: pnpm --filter casbin-mongoose-adapter --filter @casbin/mongo-changestream-watcher --no-bail test
 
@@ -175,6 +175,7 @@ jobs:
             sleep 2
           done
           curl -sf http://admin:123456@127.0.0.1:5984/ | head -c 100; echo
+          curl -sf -X PUT http://admin:123456@127.0.0.1:5984/casbin; echo
       - name: Start etcd (2379)
         run: |
           docker run -d --name etcd --network host gcr.io/etcd-development/etcd:v3.5.17
@@ -222,5 +223,9 @@ jobs:
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter casbin-prisma-adapter build
+      - name: Push prisma schema (create casbin_rule table)
+        run: pnpm --filter casbin-prisma-adapter exec prisma db push
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/casbin
       - name: Run prisma-adapter tests
         run: pnpm --filter casbin-prisma-adapter test
