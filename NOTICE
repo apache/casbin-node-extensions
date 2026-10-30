@@ -6,3 +6,9 @@ The Apache Software Foundation (https://www.apache.org/).
 
 Portions of this software were originally developed by the Casbin project.
 Copyright 2017-2026 The casbin Authors.
+
+This product includes software derived from the following MIT-licensed
+projects, with their original terms preserved in the source files:
+
+  * expression-eval, Copyright (c) Don McCurdy
+  * JSEP, Copyright (c) 2013 Stephen Oney (bundled within @casbin/expression-eval)

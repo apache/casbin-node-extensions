@@ -33,7 +33,7 @@
     "math"
   ],
   "author": "Node-Casbin",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "jsep": "^0.3.0"
   },
