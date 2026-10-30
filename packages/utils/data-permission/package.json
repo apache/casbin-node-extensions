@@ -1,6 +1,6 @@
 {
   "name": "node-casbin-data-permission",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple example using node-casbin with TypeScript",
   "main": "index.ts",
   "scripts": {

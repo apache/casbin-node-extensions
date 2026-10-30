@@ -1,6 +1,6 @@
 {
   "name": "@casbin/pubsub-watcher",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Google Cloud Pub/Sub watcher for node-casbin",
   "main": "lib/watcher.js",
   "types": "lib/watcher.d.ts",
