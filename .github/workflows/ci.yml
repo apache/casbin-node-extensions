@@ -176,6 +176,7 @@ jobs:
           done
           curl -sf http://admin:123456@127.0.0.1:5984/ | head -c 100; echo
           curl -sf -X PUT http://admin:123456@127.0.0.1:5984/casbin; echo
+          curl -sf -X PUT http://admin:123456@127.0.0.1:5984/casbin/policies -d '{ "_id":"policies", "value":[] }'; echo
       - name: Start etcd (2379)
         run: |
           docker run -d --name etcd --network host gcr.io/etcd-development/etcd:v3.5.17

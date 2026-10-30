@@ -59,7 +59,7 @@
     "build:esm": "tsc -p tsconfig.esm.json",
     "clean": "rimraf lib",
     "prepare": "npm run build",
-    "test": "run-s test:unit test:integration"
+    "test": "npm run test:unit && npm run test:integration"
   },
   "devDependencies": {
     "@types/node": "^20.11.6",

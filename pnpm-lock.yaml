@@ -22,6 +22,7 @@ overrides:
   '@babel/core': 7.25.9
   '@babel/parser': 7.25.9
   casbin-redis-adapter>casbin: 5.9.0
+  '@casbin/pubsub-watcher>casbin': 5.1.2
 
 importers:
 
@@ -978,6 +979,9 @@ importers:
       '@types/node':
         specifier: ^10.5.3
         version: 10.17.60
+      abort-controller:
+        specifier: ^3.0.0
+        version: 3.0.0
       casbin:
         specifier: 3.0.8
         version: 3.0.8
@@ -1110,8 +1114,8 @@ importers:
         specifier: ^3.9.0
         version: 3.10.1(eslint@7.32.0)(typescript@3.9.10)
       casbin:
-        specifier: ^5.1.2
-        version: 5.51.1
+        specifier: 5.1.2
+        version: 5.1.2
       eslint:
         specifier: ^7.6.0
         version: 7.32.0(supports-color@8.1.1)
@@ -5344,6 +5348,9 @@ packages:
 
   casbin@4.7.2:
     resolution: {integrity: sha512-VMihlMqjXPlsL/K/LYc61TG5ee5+ik6WQ9HxgqurzroNPpwHfT5fBPGQIvI349WUWsdZ7Rj1UxyI6nn2FHxyNw==}
+
+  casbin@5.1.2:
+    resolution: {integrity: sha512-ovnjGl8QYwFVfClOKM5sxuoXnOeC5sjj9Iml8nMg+sFJGlhzP31jI+FKELrAoFPq3HFfzlhmEX9MwPvvHyGVVw==}
 
   casbin@5.2.1:
     resolution: {integrity: sha512-sQw9kW5IKvlNg70CAWXcL7H2PGor+iuawBNsGSjG67sROR0l0SLAYJLR15neVbBxiF4kkJcSRrnIWkXCXEswhw==}
@@ -17744,9 +17751,7 @@ snapshots:
       source-map: 0.6.1
       string-length: 2.0.0
     transitivePeerDependencies:
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   '@jest/reporters@25.5.1':
     dependencies:
@@ -18064,10 +18069,7 @@ snapshots:
       jest-runner: 25.5.4
       jest-runtime: 25.5.4
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - utf-8-validate
 
   '@jest/test-sequencer@26.6.3':
     dependencies:
@@ -22055,6 +22057,13 @@ snapshots:
       expression-eval: 2.1.0
       ip: 1.1.9
       lodash: 4.18.1
+      micromatch: 4.0.8
+
+  casbin@5.1.2:
+    dependencies:
+      await-lock: 2.2.2
+      expression-eval: 2.1.0
+      ip: 1.1.9
       micromatch: 4.0.8
 
   casbin@5.2.1:
@@ -28306,9 +28315,7 @@ snapshots:
       pretty-format: 24.9.0
       throat: 4.1.0
     transitivePeerDependencies:
-      - bufferutil
       - supports-color
-      - utf-8-validate
 
   jest-jasmine2@25.5.4:
     dependencies:
@@ -28330,7 +28337,10 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
+      - bufferutil
+      - canvas
       - supports-color
+      - utf-8-validate
 
   jest-jasmine2@26.6.3:
     dependencies:
