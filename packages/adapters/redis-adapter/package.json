@@ -44,5 +44,6 @@
   },
   "bugs": {
     "url": "https://github.com/apache/casbin-node-extensions/issues"
-  }
+  },
+  "license": "Apache-2.0"
 }
