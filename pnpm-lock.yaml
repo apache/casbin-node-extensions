@@ -607,8 +607,8 @@ importers:
   packages/middlewares/egg-authz:
     dependencies:
       koa-authz:
-        specifier: ^3.0.0
-        version: 3.0.1(casbin@3.1.0)
+        specifier: ^3.0.2
+        version: link:../koa-authz
     devDependencies:
       casbin:
         specifier: ^3.0.0
@@ -1036,8 +1036,8 @@ importers:
         specifier: ^5.40.0
         version: 5.51.1
       casbin-mongoose-adapter:
-        specifier: ^5.4.0
-        version: 5.6.1(casbin@5.51.1)(socks@2.8.10)
+        specifier: ^5.6.2
+        version: link:../../adapters/mongoose-adapter
       coveralls:
         specifier: ^3.1.1
         version: 3.1.1
@@ -5334,12 +5334,6 @@ packages:
   cardinal@2.1.1:
     resolution: {integrity: sha512-JSr5eOgoEymtYHBjNWyjrMqet9Am2miJhlfKNdqLp6zoeAh0KN5dRAcxlecj5mAJrmQomgiOBj35xHLrFjqBpw==}
     hasBin: true
-
-  casbin-mongoose-adapter@5.6.1:
-    resolution: {integrity: sha512-rVN0QJZroLepjT6CEhZYGyFz/Dsv4FwF5YhoRsQ17IZVcgJEbqUxUDgFlLyyp6CBJ/+q87vCMgV+L7QXsJHY2Q==}
-    engines: {node: '>=8.0.0'}
-    peerDependencies:
-      casbin: ^5.28.0
 
   casbin@3.0.8:
     resolution: {integrity: sha512-XiB2fLoDygNH6CgnxOC9mDa4aHB0M9eciFar7PGmC3ksKN4QGYUJgAZG+X64X90mhYW2j22LVx2dArFcMpwTmA==}
@@ -10271,12 +10265,6 @@ packages:
 
   ko-sleep@1.1.4:
     resolution: {integrity: sha512-s05WGpvvzyTuRlRE8fM7ru2Z3O+InbJuBcckTWKg2W+2c1k6SnFa3IfiSSt0/peFrlYAXgNoxuJWWVNmWh+K/A==}
-
-  koa-authz@3.0.1:
-    resolution: {integrity: sha512-/XG759dJ59A6s5qLQZFUZakGE9ufusfGZ5lreV/lEk1B7F+AkcXNG88zyDK+RuYVG13jxfdPVJSagjK6f3ZI2g==}
-    engines: {node: '>= 7.6.0'}
-    peerDependencies:
-      casbin: ^3.0.0
 
   koa-bodyparser@4.4.1:
     resolution: {integrity: sha512-kBH3IYPMb+iAXnrxIhXnW+gXV8OTzCu8VPDqvcDHW9SQrbkHmqPQtiZwrltNmSq6/lpipHnT7k7PsjlVD7kK0w==}
@@ -17751,7 +17739,9 @@ snapshots:
       source-map: 0.6.1
       string-length: 2.0.0
     transitivePeerDependencies:
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   '@jest/reporters@25.5.1':
     dependencies:
@@ -22027,20 +22017,6 @@ snapshots:
     dependencies:
       ansicolors: 0.3.2
       redeyed: 2.1.1
-
-  casbin-mongoose-adapter@5.6.1(casbin@5.51.1)(socks@2.8.10):
-    dependencies:
-      casbin: 5.51.1
-      mongoose: 8.24.7(socks@2.8.10)
-    transitivePeerDependencies:
-      - '@aws-sdk/credential-providers'
-      - '@mongodb-js/zstd'
-      - gcp-metadata
-      - kerberos
-      - mongodb-client-encryption
-      - snappy
-      - socks
-      - supports-color
 
   casbin@3.0.8:
     dependencies:
@@ -28318,7 +28294,9 @@ snapshots:
       pretty-format: 24.9.0
       throat: 4.1.0
     transitivePeerDependencies:
+      - bufferutil
       - supports-color
+      - utf-8-validate
 
   jest-jasmine2@25.5.4:
     dependencies:
@@ -28340,10 +28318,7 @@ snapshots:
       pretty-format: 25.5.0
       throat: 5.0.0
     transitivePeerDependencies:
-      - bufferutil
-      - canvas
       - supports-color
-      - utf-8-validate
 
   jest-jasmine2@26.6.3:
     dependencies:
@@ -30376,10 +30351,6 @@ snapshots:
   ko-sleep@1.1.4:
     dependencies:
       ms: 2.1.3
-
-  koa-authz@3.0.1(casbin@3.1.0):
-    dependencies:
-      casbin: 3.1.0
 
   koa-bodyparser@4.4.1:
     dependencies:
