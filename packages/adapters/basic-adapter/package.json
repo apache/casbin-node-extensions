@@ -9,7 +9,7 @@
     "lint": "eslint --ext .ts src/ test/",
     "format": "npm run format:check -- --write",
     "format:check": "prettier --check \"**/*.{md,json}\" \"{src,test}/**/*.ts\"",
-    "test": "jest --forceExit"
+    "test": "jest --forceExit --runInBand"
   },
   "dependencies": {
     "knex": "^2.5.1"
