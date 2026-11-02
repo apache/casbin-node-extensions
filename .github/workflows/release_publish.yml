@@ -46,7 +46,7 @@ jobs:
         if: >-
           (github.event_name == 'workflow_dispatch' && inputs.dry_run) ||
           (startsWith(github.ref, 'refs/tags/extensions-v') && contains(github.ref, '-'))
-        run: pnpm changeset publish --dry-run
+        run: pnpm -r publish --dry-run --access public
       - name: Publish (final tag after VOTE, or manual dispatch)
         if: >-
           (github.event_name == 'workflow_dispatch' && inputs.publish) ||
