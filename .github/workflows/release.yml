@@ -1,0 +1,107 @@
+# ASF-aligned release pipeline. Two mutually exclusive stages, keyed by tag:
+#   extensions-vX.Y.Z-rc.N (contains '-') -> candidate: build, pack, hash
+#     manifest, source archive, upload to ATR, npm dry-run, prerelease backup
+#   extensions-vX.Y.Z (no '-') -> publish: only after a passed [VOTE]
+#     The final tag must point at the SAME commit as the voted RC.
+# ATR steps are gated on the repo variable ATR_ENABLED so the pipeline works
+# before ATR enrollment (GitHub prerelease keeps the vote materials alive).
+name: Release
+
+on:
+  push:
+    tags:
+      - "extensions-v*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Rehearse the candidate stage (no registry writes)"
+        required: true
+        type: boolean
+        default: false
+      publish:
+        description: "Publish packages (ONLY after a passed VOTE)"
+        required: true
+        type: boolean
+        default: false
+
+jobs:
+  candidate:
+    if: >-
+      contains(github.ref_name, '-') ||
+      (github.event_name == 'workflow_dispatch' && inputs.dry_run)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter "./packages/**" --no-bail build
+      - name: Pack npm tarballs and write the hash manifest
+        run: |
+          mkdir -p dist
+          pnpm -r pack --pack-destination dist
+          (cd dist && sha512sum ./*.tgz > ../SHASUMS-npm.txt)
+          cat SHASUMS-npm.txt
+      - name: Build the source archive
+        run: |
+          git archive --format=tar.gz -o "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" "$TAG"
+          sha512sum "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" > SHASUMS-source.txt
+          cat SHASUMS-source.txt
+      - name: Rehearse the npm publish (no registry writes)
+        run: pnpm -r publish --dry-run --access public
+      - name: Upload to ATR
+        if: vars.ATR_ENABLED == 'true'
+        uses: apache/tooling-actions/upload-to-atr@0000000000000000000000000000000000000000 # TODO: pin real SHA after ATR enrollment
+        with:
+          project: casbin-node-extensions
+          version: ${{ github.ref_name }}
+      - name: Attach vote materials to a GitHub prerelease (backup track)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$TAG" --prerelease \
+            -t "casbin-node-extensions ${TAG#extensions-} (candidate)" \
+            -F <(printf 'Vote materials: source archive + SHASUMS-source.txt + SHASUMS-npm.txt.\nVerification: source builds, npm packs byte-stable; compare dist.integrity after publish.\n') \
+            "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" \
+            SHASUMS-source.txt SHASUMS-npm.txt
+
+  publish:
+    if: >-
+      !contains(github.ref_name, '-') ||
+      (github.event_name == 'workflow_dispatch' && inputs.publish)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter "./packages/**" --no-bail build
+      - name: Publish npm packages (partial: only changed, private skipped)
+        run: pnpm changeset publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Resolve the vote and announce on ATR
+        if: vars.ATR_ENABLED == 'true'
+        uses: apache/tooling-actions/release-on-atr@0000000000000000000000000000000000000000 # TODO: pin real SHA after ATR enrollment
+      - name: GitHub release for the snapshot tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          gh release create "$TAG" --generate-notes \
+            -t "casbin-node-extensions ${TAG#extensions-}" \
+            -n "Snapshot release. Per-package notes in packages/*/CHANGELOG.md." \
+            || echo "release already exists"
