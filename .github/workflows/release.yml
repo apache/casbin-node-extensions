@@ -124,7 +124,7 @@ jobs:
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter "./packages/**" --no-bail build
-      - name: Publish npm packages (partial: only changed, private skipped)
+      - name: Publish npm packages (changed only, private skipped)
         run: pnpm changeset publish
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
