@@ -1,33 +1,40 @@
-# ASF-aligned release pipeline. Two mutually exclusive stages, keyed by tag:
-#   extensions-vX.Y.Z-rc.N (contains '-') -> candidate: build, pack, hash
-#     manifest, source archive, upload to ATR, npm dry-run, prerelease backup
-#   extensions-vX.Y.Z (no '-') -> publish: only after a passed [VOTE]
-#     The final tag must point at the SAME commit as the voted RC.
+# ASF-aligned release pipeline. RC automation is deliberately one-sided:
+# preparing the vote is automatic, publishing is manual and cannot bypass the RC.
+#
+#   extensions-vX.Y.Z-rc.N (tag push)  -> candidate, automatic:
+#     build, npm pack + SHASUMS manifests, source archive, upload to ATR,
+#     publish dry-run, GitHub prerelease backup of the vote materials.
+#   extensions-vX.Y.Z (tag push)        -> nothing. The final tag is only a
+#     provenance marker; pushing it never publishes on its own.
+#   Publish: workflow_dispatch with the final version. The job refuses to run
+#     unless extensions-vX.Y.Z exists AND points at the same commit as the
+#     latest extensions-vX.Y.Z-rc.* tag (the RC that was voted on).
+#
 # ATR steps are gated on the repo variable ATR_ENABLED so the pipeline works
 # before ATR enrollment (GitHub prerelease keeps the vote materials alive).
+# ATR release policy: register this workflow under compose, vote and finish.
 name: Release
 
 on:
   push:
     tags:
-      - "extensions-v*"
+      - "extensions-v*-rc*"
   workflow_dispatch:
     inputs:
       dry_run:
-        description: "Rehearse the candidate stage (no registry writes)"
+        description: "Rehearse the candidate stage (no registry writes, no uploads)"
         required: true
         type: boolean
         default: false
-      publish:
-        description: "Publish packages (ONLY after a passed VOTE)"
-        required: true
-        type: boolean
-        default: false
+      publish_version:
+        description: "Final version to publish, e.g. 0.1.0 (ONLY after a passed VOTE)"
+        required: false
+        type: string
 
 jobs:
   candidate:
     if: >-
-      contains(github.ref_name, '-') ||
+      (startsWith(github.ref_name, 'extensions-v') && contains(github.ref_name, '-rc')) ||
       (github.event_name == 'workflow_dispatch' && inputs.dry_run)
     runs-on: ubuntu-latest
     permissions:
@@ -51,18 +58,19 @@ jobs:
           cat SHASUMS-npm.txt
       - name: Build the source archive
         run: |
-          git archive --format=tar.gz -o "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" "$TAG"
+          git archive --format=tar.gz -o "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" HEAD
           sha512sum "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" > SHASUMS-source.txt
           cat SHASUMS-source.txt
       - name: Rehearse the npm publish (no registry writes)
         run: pnpm -r publish --dry-run --access public
       - name: Upload to ATR
-        if: vars.ATR_ENABLED == 'true'
+        if: vars.ATR_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/')
         uses: apache/tooling-actions/upload-to-atr@0000000000000000000000000000000000000000 # TODO: pin real SHA after ATR enrollment
         with:
           project: casbin-node-extensions
           version: ${{ github.ref_name }}
       - name: Attach vote materials to a GitHub prerelease (backup track)
+        if: startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -74,16 +82,44 @@ jobs:
 
   publish:
     if: >-
-      !contains(github.ref_name, '-') ||
-      (github.event_name == 'workflow_dispatch' && inputs.publish)
+      github.event_name == 'workflow_dispatch' &&
+      inputs.publish_version != '' &&
+      !inputs.dry_run
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write # npm Trusted Publishing (OIDC) and release-on-atr
+    env:
+      VERSION: ${{ inputs.publish_version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Gate - the final tag must point at the voted RC commit
+        run: |
+          set -euo pipefail
+          FINAL="extensions-v${VERSION}"
+          RC="$(git tag -l "${FINAL}-rc*" | sort -V | tail -n 1)"
+          if [ -z "$RC" ]; then
+            echo "::error::No RC tag ${FINAL}-rc* found. A release can only be published after an RC was uploaded for vote."
+            exit 1
+          fi
+          if ! FINAL_SHA="$(git rev-parse "${FINAL}^{commit}")"; then
+            echo "::error::Final tag ${FINAL} not found. Push it first (on the RC commit), then dispatch publish."
+            exit 1
+          fi
+          RC_SHA="$(git rev-parse "${RC}^{commit}")"
+          if [ "$FINAL_SHA" != "$RC_SHA" ]; then
+            echo "::error::${FINAL} (${FINAL_SHA:0:12}) does not point at the voted ${RC} (${RC_SHA:0:12}). Re-tag ${FINAL} on the RC commit."
+            exit 1
+          fi
+          echo "Verified: ${FINAL} and ${RC} both point at ${FINAL_SHA:0:12}"
+      - name: Check out the final tag
+        run: git switch --detach "extensions-v${VERSION}"
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 20 # npm Trusted Publishing (OIDC) will need >= 22.14 (npm >= 11.5.1)
           registry-url: https://registry.npmjs.org
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
@@ -96,12 +132,19 @@ jobs:
       - name: Resolve the vote and announce on ATR
         if: vars.ATR_ENABLED == 'true'
         uses: apache/tooling-actions/release-on-atr@0000000000000000000000000000000000000000 # TODO: pin real SHA after ATR enrollment
-      - name: GitHub release for the snapshot tag
+        with:
+          version: ${{ inputs.publish_version }}
+          resolve: "true"
+          resolve-resolution: passed
+          announce: "true"
+          announce-email-to: announce@apache.org
+          announce-body: "The Apache Casbin team is pleased to announce the release of casbin-node-extensions ${VERSION} (per-package npm versions in packages/*/CHANGELOG.md)."
+      - name: GitHub release for the final tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="${GITHUB_REF_NAME}"
+          TAG="extensions-v${VERSION}"
           gh release create "$TAG" --generate-notes \
-            -t "casbin-node-extensions ${TAG#extensions-}" \
+            -t "casbin-node-extensions v${VERSION}" \
             -n "Snapshot release. Per-package notes in packages/*/CHANGELOG.md." \
             || echo "release already exists"
