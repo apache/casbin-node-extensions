@@ -13,6 +13,11 @@
 # ATR steps are gated on the repo variable ATR_ENABLED so the pipeline works
 # before ATR enrollment (GitHub prerelease keeps the vote materials alive).
 # ATR release policy: register this workflow under compose, vote and finish.
+#
+# npm publishing uses OIDC Trusted Publishing only - no registry tokens exist.
+# Prerequisites: node 26 (bundles npm 11.20; OIDC needs npm >= 11.5.1),
+# id-token: write, and a per-package trusted-publisher entry on npmjs.com
+# (repository apache/casbin-node-extensions, workflow release.yml).
 name: Release
 
 on:
@@ -46,7 +51,7 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter "./packages/**" --no-bail build
@@ -119,16 +124,13 @@ jobs:
         run: git switch --detach "extensions-v${VERSION}"
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20 # npm Trusted Publishing (OIDC) will need >= 22.14 (npm >= 11.5.1)
+          node-version: 26
           registry-url: https://registry.npmjs.org
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter "./packages/**" --no-bail build
-      - name: Publish npm packages (changed only, private skipped)
-        run: pnpm changeset publish
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Publish npm packages via OIDC (unpublished versions only, private skipped)
+        run: pnpm -r publish --access public --no-git-checks
       - name: Resolve the vote and announce on ATR
         if: vars.ATR_ENABLED == 'true'
         uses: apache/tooling-actions/release-on-atr@b7ebde57bc17297396d5c351ba5a4c498b0375e3
