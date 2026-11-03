@@ -43,8 +43,8 @@ jobs:
     env:
       TAG: ${{ github.ref_name }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 20
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
@@ -65,7 +65,7 @@ jobs:
         run: pnpm -r publish --dry-run --access public
       - name: Upload to ATR
         if: vars.ATR_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/')
-        uses: apache/tooling-actions/upload-to-atr@0000000000000000000000000000000000000000 # TODO: pin real SHA after ATR enrollment
+        uses: apache/tooling-actions/upload-to-atr@56c5b7b527dc3fc2f8156e2a00acd1a7cd7c8a05
         with:
           project: casbin-node-extensions
           version: ${{ github.ref_name }}
@@ -92,7 +92,7 @@ jobs:
     env:
       VERSION: ${{ inputs.publish_version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -117,7 +117,7 @@ jobs:
           echo "Verified: ${FINAL} and ${RC} both point at ${FINAL_SHA:0:12}"
       - name: Check out the final tag
         run: git switch --detach "extensions-v${VERSION}"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 20 # npm Trusted Publishing (OIDC) will need >= 22.14 (npm >= 11.5.1)
           registry-url: https://registry.npmjs.org
@@ -131,7 +131,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
       - name: Resolve the vote and announce on ATR
         if: vars.ATR_ENABLED == 'true'
-        uses: apache/tooling-actions/release-on-atr@0000000000000000000000000000000000000000 # TODO: pin real SHA after ATR enrollment
+        uses: apache/tooling-actions/release-on-atr@b7ebde57bc17297396d5c351ba5a4c498b0375e3
         with:
           version: ${{ inputs.publish_version }}
           resolve: "true"
