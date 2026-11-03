@@ -7,10 +7,10 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 18
+          node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build
@@ -18,10 +18,10 @@ jobs:
   test-unit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 18
+          node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build || true
@@ -74,10 +74,10 @@ jobs:
       MYSQL_PASSWORD: root
       MYSQL_DB: casbin
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 18
+          node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build || true
@@ -130,10 +130,10 @@ jobs:
   test-mongo:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 18
+          node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter casbin-mongoose-adapter --filter @casbin/mongo-changestream-watcher --no-bail build
@@ -159,10 +159,10 @@ jobs:
     env:
       PUBSUB_EMULATOR_HOST: localhost:8085
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 18
+          node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter casbin-couchdb-adapter --filter @casbin/etcd-watcher --filter @casbin/pubsub-watcher --no-bail build
@@ -219,10 +219,10 @@ jobs:
           --health-timeout 3s
           --health-retries 10
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter casbin-prisma-adapter build
