@@ -21,12 +21,12 @@
     "prepare": "npm run build"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.8",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.10.6",
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
-    "better-sqlite3": "^9.2.2",
+    "better-sqlite3": "^13.0.3",
     "casbin": "^5.30.0",
     "coveralls": "^3.1.1",
     "drizzle-orm": "^0.45.0",
