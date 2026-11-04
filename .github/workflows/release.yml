@@ -7,6 +7,10 @@
 #     staging area - staged, NOT live (gated on NPM_STAGE_ENABLED),
 #     GitHub prerelease backup of all vote materials.
 #     The vote runs on dev@casbin.apache.org via ATR.
+#     ATR bundle: artifacts renamed with '-incubating' + per-file .sha512
+#     sidecars (podling + RDP checks; SHASUMS manifests are not allowed at
+#     the ATR top level). The RM must still add .asc signatures to the draft
+#     (gpg --detach-sign --armor) before ATR checks pass - CI cannot sign.
 #   extensions-vX.Y.Z (tag push)        -> nothing. The final tag is only a
 #     provenance marker; pushing it never publishes on its own.
 #   Going live after a passed vote takes two human steps:
@@ -70,11 +74,25 @@ jobs:
           pnpm -r pack --pack-destination dist
           (cd dist && sha512sum ./*.tgz > ../SHASUMS-npm.txt)
           cat SHASUMS-npm.txt
-      - name: Build the source archive
+      - name: Build the source archive and assemble the ATR bundle
         run: |
-          git archive --format=tar.gz -o "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" HEAD
-          sha512sum "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" > SHASUMS-source.txt
+          SRC="apache-casbin-node-extensions-${TAG#extensions-}-incubating-src.tar.gz"
+          git archive --format=tar.gz -o "$SRC" HEAD
+          sha512sum "$SRC" > SHASUMS-source.txt
           cat SHASUMS-source.txt
+          # ATR bundle: podling check wants 'incubating' in every artifact
+          # filename, RDP wants a checksum next to every artifact, and the
+          # .asc signatures are added by the RM afterwards.
+          mkdir -p atr-dist
+          cp "$SRC" atr-dist/
+          for tgz in dist/*.tgz; do
+            if tar -xzOf "$tgz" package/package.json | jq -e '.private // false' > /dev/null; then
+              echo "skip private (not part of the release): $tgz"
+              continue
+            fi
+            cp "$tgz" "atr-dist/$(basename "$tgz" .tgz)-incubating.tgz"
+          done
+          (cd atr-dist && for f in *; do sha512sum "$f" > "$f.sha512"; done)
       - name: Rehearse the npm publish (no registry writes)
         if: github.event_name == 'workflow_dispatch'
         run: |
@@ -101,6 +119,8 @@ jobs:
         with:
           project: casbin-node-extensions
           version: ${{ github.ref_name }}
+          src: atr-dist
+          source-commit: ${{ github.sha }}
       - name: Attach vote materials to a GitHub prerelease (backup track)
         if: startsWith(github.ref, 'refs/tags/')
         env:
@@ -109,7 +129,7 @@ jobs:
           gh release create "$TAG" --prerelease \
             -t "casbin-node-extensions ${TAG#extensions-} (candidate)" \
             -F <(printf 'Vote materials: npm tarballs + SHASUMS-npm.txt + source archive + SHASUMS-source.txt.\nVerification: source builds; sha512 of each tarball is in SHASUMS-npm.txt; after the vote the RM approves these exact staged tarballs with 2FA.\n') \
-            "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" \
+            "apache-casbin-node-extensions-${TAG#extensions-}-incubating-src.tar.gz" \
             SHASUMS-source.txt SHASUMS-npm.txt \
             dist/*.tgz
 
