@@ -1,6 +1,6 @@
 {
   "name": "drizzle-adapter",
-  "version": "1.0.0",
+  "version": "1.4.1",
   "description": "Drizzle ORM adapter for Casbin",
   "license": "Apache-2.0",
   "main": "lib/index.js",

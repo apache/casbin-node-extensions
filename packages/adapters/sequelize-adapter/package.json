@@ -1,6 +1,6 @@
 {
   "name": "casbin-sequelize-adapter",
-  "version": "2.2.0",
+  "version": "2.7.2",
   "description": "Sequelize adapter for Casbin",
   "license": "Apache-2.0",
   "main": "lib/adapter.js",

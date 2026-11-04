@@ -29,5 +29,6 @@
   },
   "bugs": {
     "url": "https://github.com/apache/casbin-node-extensions/issues"
-  }
+  },
+  "private": true
 }
