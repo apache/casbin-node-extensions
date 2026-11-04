@@ -1,24 +1,29 @@
-# ASF-aligned release pipeline. RC automation is deliberately one-sided:
-# preparing the vote is automatic, publishing is manual and cannot bypass the RC.
+# ASF-aligned release pipeline, deliberately one-sided:
+# preparing the vote is automatic, making packages live is always human.
 #
 #   extensions-vX.Y.Z-rc.N (tag push)  -> candidate, automatic:
-#     build, npm pack + SHASUMS manifests, source archive, upload to ATR,
-#     publish dry-run, GitHub prerelease backup of the vote materials.
+#     build, npm pack + SHASUMS manifests, source archive, upload to ATR
+#     (gated on ATR_ENABLED), npm stage publish the tarballs into the npm
+#     staging area - staged, NOT live (gated on NPM_STAGE_ENABLED),
+#     GitHub prerelease backup of all vote materials.
+#     The vote runs on dev@casbin.apache.org via ATR.
 #   extensions-vX.Y.Z (tag push)        -> nothing. The final tag is only a
 #     provenance marker; pushing it never publishes on its own.
-#   Publish: workflow_dispatch with the final version. The job refuses to run
-#     unless extensions-vX.Y.Z exists AND points at the same commit as the
-#     latest extensions-vX.Y.Z-rc.* tag (the RC that was voted on).
-#     It publishes the exact tarballs attached to the RC prerelease,
-#     sha512-verified against SHASUMS-npm.txt - the bytes the community voted
-#     on are the bytes that land on npm. No second build.
+#   Going live after a passed vote takes two human steps:
+#     1. RM approves the staged npm packages with 2FA (npm stage approve),
+#        after checking each staged tarball against SHASUMS-npm.txt - the
+#        bytes the community voted on are the bytes that go live.
+#     2. workflow_dispatch(publish_version): verifies the final tag points
+#        at the voted RC commit, re-verifies the tarball hashes, resolves
+#        the vote and announces on ATR, cuts the GitHub release.
 #
-# ATR steps are gated on the repo variable ATR_ENABLED so the pipeline works
-# before ATR enrollment (GitHub prerelease keeps the vote materials alive).
-# ATR release policy: register this workflow under compose, vote and finish.
+# ATR/npm staging steps are gated on repo variables (ATR_ENABLED,
+# NPM_STAGE_ENABLED) so the pipeline works before enrollment (GitHub
+# prerelease keeps the vote materials alive). ATR release policy:
+# register this workflow under compose, vote and finish.
 #
-# npm publishing uses OIDC Trusted Publishing only - no registry tokens exist.
-# Prerequisites: node 26 (bundles npm 11.20; OIDC needs npm >= 11.5.1),
+# npm uses OIDC Trusted Publishing only - no registry tokens exist.
+# Prerequisites: node 26 (bundles npm 11.20; staging needs npm >= 11.15),
 # id-token: write, and a per-package trusted-publisher entry on npmjs.com
 # (repository apache/casbin-node-extensions, workflow release.yml).
 name: Release
@@ -55,6 +60,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 26
+          registry-url: https://registry.npmjs.org
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter "./packages/**" --no-bail build
@@ -70,6 +76,7 @@ jobs:
           sha512sum "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" > SHASUMS-source.txt
           cat SHASUMS-source.txt
       - name: Rehearse the npm publish (no registry writes)
+        if: github.event_name == 'workflow_dispatch'
         run: |
           for tgz in dist/*.tgz; do
             if tar -xzOf "$tgz" package/package.json | jq -e '.private // false' > /dev/null; then
@@ -77,6 +84,16 @@ jobs:
               continue
             fi
             npm publish "$tgz" --dry-run --access public
+          done
+      - name: Stage the npm tarballs via trusted publishing (staging area, not live)
+        if: vars.NPM_STAGE_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/')
+        run: |
+          for tgz in dist/*.tgz; do
+            if tar -xzOf "$tgz" package/package.json | jq -e '.private // false' > /dev/null; then
+              echo "skip private: $tgz"
+              continue
+            fi
+            npm stage publish "$tgz" --access public
           done
       - name: Upload to ATR
         if: vars.ATR_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/')
@@ -91,7 +108,7 @@ jobs:
         run: |
           gh release create "$TAG" --prerelease \
             -t "casbin-node-extensions ${TAG#extensions-} (candidate)" \
-            -F <(printf 'Vote materials: npm tarballs + SHASUMS-npm.txt + source archive + SHASUMS-source.txt.\nVerification: source builds; sha512 of each tarball is in SHASUMS-npm.txt; the publish job publishes these exact files.\n') \
+            -F <(printf 'Vote materials: npm tarballs + SHASUMS-npm.txt + source archive + SHASUMS-source.txt.\nVerification: source builds; sha512 of each tarball is in SHASUMS-npm.txt; after the vote the RM approves these exact staged tarballs with 2FA.\n') \
             "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" \
             SHASUMS-source.txt SHASUMS-npm.txt \
             dist/*.tgz
@@ -104,7 +121,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      id-token: write # npm Trusted Publishing (OIDC) and release-on-atr
+      id-token: write # release-on-atr (GitHub OIDC JWT); npm publishing is NOT automated
     env:
       VERSION: ${{ inputs.publish_version }}
     steps:
@@ -133,7 +150,7 @@ jobs:
           fi
           echo "Verified: ${FINAL} and ${RC} both point at ${FINAL_SHA:0:12}"
           echo "rc=$RC" >> "$GITHUB_OUTPUT"
-      - name: Download the voted npm tarballs from the RC prerelease
+      - name: Re-verify the voted tarballs and print the approval checklist
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -142,19 +159,11 @@ jobs:
           gh release download "${{ steps.gate.outputs.rc }}" --dir dist \
             --pattern '*.tgz' --pattern 'SHASUMS-npm.txt'
           (cd dist && sha512sum -c SHASUMS-npm.txt)
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
-        with:
-          node-version: 26
-          registry-url: https://registry.npmjs.org
-      - name: Publish the voted npm tarballs via OIDC (byte-identical, private skipped)
-        run: |
-          for tgz in dist/*.tgz; do
-            if tar -xzOf "$tgz" package/package.json | jq -e '.private // false' > /dev/null; then
-              echo "skip private: $tgz"
-              continue
-            fi
-            npm publish "$tgz" --access public
-          done
+          echo "Packages go live only when the RM approves the staged versions with 2FA."
+          echo "Before approving, check every staged tarball against the hashes verified above:"
+          echo "  npm stage list && npm stage download <stage-id> && sha512sum -c SHASUMS-npm.txt"
+          echo "If staging was skipped (NPM_STAGE_ENABLED unset), publish these exact tarballs manually:"
+          echo "  npm publish <tgz> --access public"
       - name: Resolve the vote and announce on ATR
         if: vars.ATR_ENABLED == 'true'
         uses: apache/tooling-actions/release-on-atr@b7ebde57bc17297396d5c351ba5a4c498b0375e3
