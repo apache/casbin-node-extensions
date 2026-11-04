@@ -19,9 +19,9 @@
 #        bytes the community voted on are the bytes that go live.
 #     2. workflow_dispatch(publish_version): verifies the final tag points
 #        at the voted RC commit, re-verifies the tarball hashes, resolves
-#        the vote and announces on ATR. The RM promotes the RC prerelease
-#        to the final GitHub release by hand (edit it, drop the pre-release
-#        flag) - CI never creates a second release.
+#        the vote and announces on ATR, and cuts the final GitHub release
+#        from the voted artifacts - the release is only created after the
+#        vote passed (polaris release-4 pattern).
 #
 # ATR/npm staging steps are gated on repo variables (ATR_ENABLED,
 # NPM_STAGE_ENABLED) so the pipeline works before enrollment (GitHub
@@ -149,7 +149,7 @@ jobs:
       !inputs.dry_run
     runs-on: ubuntu-latest
     permissions:
-      contents: read # download the voted tarballs from the RC prerelease
+      contents: write # download the voted artifacts and cut the final GitHub release
       id-token: write # release-on-atr (GitHub OIDC JWT); npm publishing is NOT automated
     env:
       VERSION: ${{ inputs.publish_version }}
@@ -179,15 +179,16 @@ jobs:
           fi
           echo "Verified: ${FINAL} and ${RC} both point at ${FINAL_SHA:0:12}"
           echo "rc=$RC" >> "$GITHUB_OUTPUT"
-      - name: Re-verify the voted tarballs and print the approval checklist
+      - name: Re-verify the voted artifacts and print the approval checklist
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           mkdir -p dist
           gh release download "${{ steps.gate.outputs.rc }}" --dir dist \
-            --pattern '*.tgz' --pattern 'SHASUMS-npm.txt'
-          (cd dist && sha512sum -c SHASUMS-npm.txt)
+            --pattern '*.tgz' --pattern '*.tar.gz' \
+            --pattern 'SHASUMS-npm.txt' --pattern 'SHASUMS-source.txt'
+          (cd dist && sha512sum -c SHASUMS-npm.txt && sha512sum -c SHASUMS-source.txt)
           echo "Packages go live only when the RM approves the staged versions with 2FA."
           echo "Before approving, check every staged tarball against the hashes verified above:"
           echo "  npm stage list && npm stage download <stage-id> && sha512sum -c SHASUMS-npm.txt"
@@ -203,3 +204,13 @@ jobs:
           announce: "true"
           announce-email-to: general@incubator.apache.org # podling channel (publisher API takes one address); RM forwards a copy to dev@casbin
           announce-body: "The Apache Casbin team is pleased to announce the release of casbin-node-extensions (Incubating) ${VERSION} (per-package npm versions in packages/*/CHANGELOG.md)."
+      - name: GitHub release for the final tag, built from the voted artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="extensions-v${VERSION}"
+          gh release create "$TAG" \
+            -t "casbin-node-extensions (Incubating) v${VERSION}" \
+            -n "Per-package npm versions and notes in packages/*/CHANGELOG.md. Canonical release artifacts: https://downloads.apache.org/casbin/ (Incubating podling). These assets are the exact artifacts the vote covered; npm tarballs are also on the registry." \
+            dist/* \
+            || echo "::warning::release for $TAG already exists - nothing attached"
