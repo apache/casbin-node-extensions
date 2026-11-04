@@ -19,7 +19,9 @@
 #        bytes the community voted on are the bytes that go live.
 #     2. workflow_dispatch(publish_version): verifies the final tag points
 #        at the voted RC commit, re-verifies the tarball hashes, resolves
-#        the vote and announces on ATR, cuts the GitHub release.
+#        the vote and announces on ATR. The RM promotes the RC prerelease
+#        to the final GitHub release by hand (edit it, drop the pre-release
+#        flag) - CI never creates a second release.
 #
 # ATR/npm staging steps are gated on repo variables (ATR_ENABLED,
 # NPM_STAGE_ENABLED) so the pipeline works before enrollment (GitHub
@@ -147,7 +149,7 @@ jobs:
       !inputs.dry_run
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read # download the voted tarballs from the RC prerelease
       id-token: write # release-on-atr (GitHub OIDC JWT); npm publishing is NOT automated
     env:
       VERSION: ${{ inputs.publish_version }}
@@ -201,12 +203,3 @@ jobs:
           announce: "true"
           announce-email-to: general@incubator.apache.org # podling channel (publisher API takes one address); RM forwards a copy to dev@casbin
           announce-body: "The Apache Casbin team is pleased to announce the release of casbin-node-extensions (Incubating) ${VERSION} (per-package npm versions in packages/*/CHANGELOG.md)."
-      - name: GitHub release for the final tag
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG="extensions-v${VERSION}"
-          gh release create "$TAG" --generate-notes \
-            -t "casbin-node-extensions v${VERSION}" \
-            -n "Snapshot release. Per-package notes in packages/*/CHANGELOG.md." \
-            || echo "release already exists"
