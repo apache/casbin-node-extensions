@@ -64,7 +64,9 @@
     "dist",
     "src",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "NOTICE",
+    "DISCLAIMER"
   ],
   "config": {
     "commitizen": {

@@ -39,7 +39,9 @@
     "lib",
     "test",
     "examples",
-    "prisma"
+    "prisma",
+    "NOTICE",
+    "DISCLAIMER"
   ],
   "jest": {
     "testEnvironment": "node",

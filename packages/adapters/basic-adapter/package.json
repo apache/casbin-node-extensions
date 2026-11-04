@@ -52,7 +52,9 @@
   "files": [
     "lib",
     "test",
-    "examples"
+    "examples",
+    "NOTICE",
+    "DISCLAIMER"
   ],
   "jest": {
     "transform": {

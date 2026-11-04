@@ -45,7 +45,9 @@
   },
   "files": [
     "lib",
-    "examples"
+    "examples",
+    "NOTICE",
+    "DISCLAIMER"
   ],
   "homepage": "http://casbin.org",
   "repository": {
