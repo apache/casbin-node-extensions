@@ -1,0 +1,8 @@
+# Source-release hygiene: the ATR source tarball is cut with git archive,
+# which honors export-ignore. Repository infrastructure must not leak into
+# the release archive (ATR rejects dotfiles at the archive root).
+.asf.yaml export-ignore
+.changeset export-ignore
+.github export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore
