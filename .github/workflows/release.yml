@@ -9,6 +9,9 @@
 #   Publish: workflow_dispatch with the final version. The job refuses to run
 #     unless extensions-vX.Y.Z exists AND points at the same commit as the
 #     latest extensions-vX.Y.Z-rc.* tag (the RC that was voted on).
+#     It publishes the exact tarballs attached to the RC prerelease,
+#     sha512-verified against SHASUMS-npm.txt - the bytes the community voted
+#     on are the bytes that land on npm. No second build.
 #
 # ATR steps are gated on the repo variable ATR_ENABLED so the pipeline works
 # before ATR enrollment (GitHub prerelease keeps the vote materials alive).
@@ -67,7 +70,14 @@ jobs:
           sha512sum "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" > SHASUMS-source.txt
           cat SHASUMS-source.txt
       - name: Rehearse the npm publish (no registry writes)
-        run: pnpm -r publish --dry-run --access public
+        run: |
+          for tgz in dist/*.tgz; do
+            if tar -xzOf "$tgz" package/package.json | jq -e '.private // false' > /dev/null; then
+              echo "skip private: $tgz"
+              continue
+            fi
+            npm publish "$tgz" --dry-run --access public
+          done
       - name: Upload to ATR
         if: vars.ATR_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/')
         uses: apache/tooling-actions/upload-to-atr@56c5b7b527dc3fc2f8156e2a00acd1a7cd7c8a05
@@ -81,9 +91,10 @@ jobs:
         run: |
           gh release create "$TAG" --prerelease \
             -t "casbin-node-extensions ${TAG#extensions-} (candidate)" \
-            -F <(printf 'Vote materials: source archive + SHASUMS-source.txt + SHASUMS-npm.txt.\nVerification: source builds, npm packs byte-stable; compare dist.integrity after publish.\n') \
+            -F <(printf 'Vote materials: npm tarballs + SHASUMS-npm.txt + source archive + SHASUMS-source.txt.\nVerification: source builds; sha512 of each tarball is in SHASUMS-npm.txt; the publish job publishes these exact files.\n') \
             "apache-casbin-node-extensions-${TAG#extensions-}-src.tar.gz" \
-            SHASUMS-source.txt SHASUMS-npm.txt
+            SHASUMS-source.txt SHASUMS-npm.txt \
+            dist/*.tgz
 
   publish:
     if: >-
@@ -102,6 +113,7 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - name: Gate - the final tag must point at the voted RC commit
+        id: gate
         run: |
           set -euo pipefail
           FINAL="extensions-v${VERSION}"
@@ -120,17 +132,29 @@ jobs:
             exit 1
           fi
           echo "Verified: ${FINAL} and ${RC} both point at ${FINAL_SHA:0:12}"
-      - name: Check out the final tag
-        run: git switch --detach "extensions-v${VERSION}"
+          echo "rc=$RC" >> "$GITHUB_OUTPUT"
+      - name: Download the voted npm tarballs from the RC prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          gh release download "${{ steps.gate.outputs.rc }}" --dir dist \
+            --pattern '*.tgz' --pattern 'SHASUMS-npm.txt'
+          (cd dist && sha512sum -c SHASUMS-npm.txt)
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 26
           registry-url: https://registry.npmjs.org
-      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter "./packages/**" --no-bail build
-      - name: Publish npm packages via OIDC (unpublished versions only, private skipped)
-        run: pnpm -r publish --access public --no-git-checks
+      - name: Publish the voted npm tarballs via OIDC (byte-identical, private skipped)
+        run: |
+          for tgz in dist/*.tgz; do
+            if tar -xzOf "$tgz" package/package.json | jq -e '.private // false' > /dev/null; then
+              echo "skip private: $tgz"
+              continue
+            fi
+            npm publish "$tgz" --access public
+          done
       - name: Resolve the vote and announce on ATR
         if: vars.ATR_ENABLED == 'true'
         uses: apache/tooling-actions/release-on-atr@b7ebde57bc17297396d5c351ba5a4c498b0375e3
@@ -139,8 +163,8 @@ jobs:
           resolve: "true"
           resolve-resolution: passed
           announce: "true"
-          announce-email-to: announce@apache.org
-          announce-body: "The Apache Casbin team is pleased to announce the release of casbin-node-extensions ${VERSION} (per-package npm versions in packages/*/CHANGELOG.md)."
+          announce-email-to: general@incubator.apache.org # podling channel (publisher API takes one address); RM forwards a copy to dev@casbin
+          announce-body: "The Apache Casbin team is pleased to announce the release of casbin-node-extensions (Incubating) ${VERSION} (per-package npm versions in packages/*/CHANGELOG.md)."
       - name: GitHub release for the final tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
