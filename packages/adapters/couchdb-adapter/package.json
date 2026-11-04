@@ -12,7 +12,6 @@
     "test": "jest --forceExit",
     "format": "yarn format:check --write",
     "format:check": "prettier --check \"{src,test}/**/*.ts\"",
-    "prepack": "run-s lint build",
     "release": "npx -p semantic-release -p @semantic-release/git -p @semantic-release/changelog semantic-release"
   },
   "devDependencies": {

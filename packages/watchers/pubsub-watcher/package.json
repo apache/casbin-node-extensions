@@ -6,8 +6,6 @@
   "main": "lib/watcher.js",
   "types": "lib/watcher.d.ts",
   "scripts": {
-    "prepack": "npm run lint && npm run build",
-    "postpack": "rimraf lib",
     "prettier": "prettier --write **/*.{ts,js}",
     "build": "rimraf lib && tsc -p tsconfig.json",
     "lint": "eslint -c .eslintrc.js --ext .ts src",
