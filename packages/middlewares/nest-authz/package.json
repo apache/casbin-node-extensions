@@ -25,7 +25,7 @@
   },
   "keywords": [],
   "author": "dreamdevil00",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "dependencies": {
     "casbin": "^5.30.0"
   },
