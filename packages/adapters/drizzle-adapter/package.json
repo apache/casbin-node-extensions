@@ -46,7 +46,9 @@
   "dependencies": {},
   "files": [
     "lib",
-    "examples"
+    "examples",
+    "NOTICE",
+    "DISCLAIMER"
   ],
   "homepage": "https://casbin.org",
   "repository": {

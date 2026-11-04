@@ -13,7 +13,9 @@
   "files": [
     "build",
     "testt",
-    "examples"
+    "examples",
+    "NOTICE",
+    "DISCLAIMER"
   ],
   "keywords": [
     "node-casbin",

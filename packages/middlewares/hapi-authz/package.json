@@ -10,7 +10,9 @@
   },
   "files": [
     "build",
-    "examples"
+    "examples",
+    "NOTICE",
+    "DISCLAIMER"
   ],
   "scripts": {
     "tsc": "tsc",

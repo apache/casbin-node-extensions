@@ -56,7 +56,9 @@
     "README.md",
     "LICENSE",
     "package.json",
-    "package-lock.json"
+    "package-lock.json",
+    "NOTICE",
+    "DISCLAIMER"
   ],
   "bugs": {
     "url": "https://github.com/apache/casbin-node-extensions/issues"

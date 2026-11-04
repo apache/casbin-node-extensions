@@ -13,7 +13,9 @@
   },
   "files": [
     "examples",
-    "lib"
+    "lib",
+    "NOTICE",
+    "DISCLAIMER"
   ],
   "repository": {
     "type": "git",
