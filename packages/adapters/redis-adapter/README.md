@@ -48,7 +48,7 @@ enforcer ([read more about enforcer here](https://github.com/casbin/node-casbin#
 ```typescript
 
 import {newEnforcer} from 'casbin';
-import {NodeRedisAdapter} from './adapter' ;
+import {NodeRedisAdapter} from 'casbin-redis-adapter';
 import {join} from 'path';
 
 const model = join(__dirname, 'casbin_conf/model.conf');
