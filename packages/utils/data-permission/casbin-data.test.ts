@@ -1,3 +1,17 @@
+// Copyright 2026 The Apache Software Foundation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 /* 本测试用例文件涵盖了 Casbin 的各种功能，包括基本授权、批量授权、获取用户的隐式权限以及获取用户在特定操作
 下所允许的对象条件。每个测试用例都创建了一个新的 Enforcer 对象，并使用预定义的模型和策略文件对其进行了初始化。
 在每个测试用例中，我们分别检查了请求是否被允许、结果是否符合预期等。通过这些测试用例，可以确保 Casbin 库在实际

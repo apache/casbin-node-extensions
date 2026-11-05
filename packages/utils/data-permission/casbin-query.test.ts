@@ -1,3 +1,17 @@
+// Copyright 2026 The Apache Software Foundation
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 /* 上述测试用例主要包括两部分：解析条件（parseCondition）和获取用户允许的记录（GetAllowedRecordsForUser）。
 在解析条件部分，我们针对不同的条件字符串进行测试，验证 parseCondition 函数是否能正确地解析这些字符串并
 输出相应的 Sequelize 查询条件。在获取用户允许的记录部分，我们首先创建一个新的 Enforcer 实例，然后在每个
