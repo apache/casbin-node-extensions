@@ -16,15 +16,21 @@
 
 # [5.3.0](https://github.com/node-casbin/expression-eval/compare/v5.2.0...v5.3.0) (2024-11-19)
 
-## 5.3.1
+## 5.4.0
 
-### Patch Changes
+### Minor Changes
 
 - First release from the apache/casbin-node-extensions monorepo.
 
   The 23 source repositories were consolidated (full git history and tags
   preserved). Future development and releases happen here; the old
   repositories will be archived. See the README for the package map.
+- Build system migrated from microbundle to rollup; the artifact layout
+  is byte-compatible with 5.3.0. The same four formats ship with the
+  same filenames and entry fields (`main`, `module`, `unpkg`): ES5 CJS,
+  ES5 ESM, ES2017 ESM (modern) and ES5 UMD exposing the
+  `expressionEval` global, all with `jsep` external. Behavior verified
+  identical to 5.3.0 across eval/evalAsync/compile.
 
 ### Features
 

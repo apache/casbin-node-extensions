@@ -25,6 +25,12 @@
   The 23 source repositories were consolidated (full git history and tags
   preserved). Future development and releases happen here; the old
   repositories will be archived. See the README for the package map.
+- Fix the package entry points: `main` and `module` pointed at
+  `lib/*/index.js`, a file that never existed in any published version,
+  so `require('casbin-redis-adapter')` always failed and the README
+  taught a relative import as a workaround. They now point at
+  `lib/*/adapter.js`, a `types` field is added, and the README shows
+  the package-name import. Deep imports keep working unchanged.
 
 ### Bug Fixes
 
