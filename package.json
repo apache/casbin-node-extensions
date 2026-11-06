@@ -6,7 +6,8 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
-    "lint": "pnpm -r lint"
+    "lint": "pnpm -r lint",
+    "build:all": "pnpm --filter \"./packages/**\" --no-bail build && node scripts/add-dts-headers.js"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0"
