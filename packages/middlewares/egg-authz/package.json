@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/apache/casbin-node-extensions/tree/main/packages/middlewares/egg-authz#readme",
   "publishConfig": {
-    "registry": "https://registry.yarnpkg.com/"
+    "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
     "koa-authz": "^3.0.2"
