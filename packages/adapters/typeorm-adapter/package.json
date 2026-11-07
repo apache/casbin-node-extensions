@@ -12,8 +12,7 @@
     "coverage": "jest --coverage --runInBand",
     "lint": "eslint \"src/**/*.{ts,js,jsx}\"",
     "fix": "eslint \"src/**/*.{ts,js,jsx}\" --fix",
-    "test": "jest --runInBand",
-    "prepare": "npm run build"
+    "test": "jest --runInBand"
   },
   "devDependencies": {
     "@types/jest": "^23.3.5",

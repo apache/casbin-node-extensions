@@ -39,7 +39,7 @@
     "typescript": "^3.8.3"
   },
   "publishConfig": {
-    "registry": "https://registry.yarnpkg.com"
+    "registry": "https://registry.npmjs.org"
   },
   "bugs": {
     "url": "https://github.com/apache/casbin-node-extensions/issues"

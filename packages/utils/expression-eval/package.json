@@ -54,11 +54,9 @@
   },
   "files": [
     "dist/",
-    "index.js",
     "README.md",
     "LICENSE",
     "package.json",
-    "package-lock.json",
     "NOTICE",
     "DISCLAIMER"
   ],

@@ -17,8 +17,7 @@
     "lint": "eslint \"src/**/*.{ts,js,jsx}\"",
     "fix": "eslint \"src/**/*.{ts,js,jsx}\" --fix",
     "test": "jest --runInBand",
-    "release": "npx -p semantic-release -p @semantic-release/git -p @semantic-release/changelog -p @semantic-release/github semantic-release",
-    "prepare": "npm run build"
+    "release": "npx -p semantic-release -p @semantic-release/git -p @semantic-release/changelog -p @semantic-release/github semantic-release"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^9.6.0",
