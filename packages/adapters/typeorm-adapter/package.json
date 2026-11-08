@@ -8,7 +8,7 @@
   "scripts": {
     "precommit": "lint-staged",
     "prepublish": "yarn run lint && yarn build",
-    "build": "rimraf lib && tsc",
+    "build": "rimraf lib && rollup -c",
     "coverage": "jest --coverage --runInBand",
     "lint": "eslint \"src/**/*.{ts,js,jsx}\"",
     "fix": "eslint \"src/**/*.{ts,js,jsx}\" --fix",
@@ -31,12 +31,15 @@
     "pg": "^8.4.2",
     "rimraf": "^2.6.2",
     "ts-jest": "28.0.7",
-    "typescript": "^5.2.2"
+    "typescript": "^5.1.6",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "rollup": "^3.29.5"
   },
   "dependencies": {
     "casbin": "^5.27.0",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^1.0.0"
+    "typeorm": "^1.0.0",
+    "tslib": "^2.8.1"
   },
   "peerDependencies": {
     "mongodb": "^7.0.0"

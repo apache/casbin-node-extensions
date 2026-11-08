@@ -30,7 +30,7 @@
     "test": "jest",
     "semantic-release": "semantic-release",
     "coverage": "jest --coverage",
-    "build": "rimraf lib && tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json",
+    "build": "rimraf lib/cjs lib/esm && rollup -c",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "clean": "rimraf lib"
@@ -84,10 +84,13 @@
     "rimraf": "^5.0.5",
     "sinon": "^21.0.0",
     "ts-jest": "^29.4.5",
-    "typescript": "^5.9.3"
+    "typescript": "^5.1.6",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "rollup": "^3.29.5"
   },
   "dependencies": {
-    "mongodb": "^6.20.0"
+    "mongodb": "^6.20.0",
+    "tslib": "^2.8.1"
   },
   "peerDependencies": {
     "casbin": "^5.40.0"
@@ -96,5 +99,10 @@
     "commitizen": {
       "path": "./node_modules/cz-conventional-changelog"
     }
-  }
+  },
+  "files": [
+    "lib",
+    "src",
+    "test"
+  ]
 }
