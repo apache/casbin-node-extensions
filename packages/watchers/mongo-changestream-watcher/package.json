@@ -103,6 +103,8 @@
   "files": [
     "lib",
     "src",
-    "test"
+    "test",
+    "NOTICE",
+    "DISCLAIMER"
   ]
 }

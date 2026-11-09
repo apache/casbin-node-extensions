@@ -48,5 +48,11 @@
     "url": "https://github.com/apache/casbin-node-extensions/issues"
   },
   "license": "Apache-2.0",
-  "types": "lib/cjs/adapter.d.ts"
+  "types": "lib/cjs/adapter.d.ts",
+  "files": [
+    "lib",
+    "examples",
+    "NOTICE",
+    "DISCLAIMER"
+  ]
 }

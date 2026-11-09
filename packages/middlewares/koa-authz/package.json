@@ -4,6 +4,13 @@
   "description": "koa-authz is an authorization middleware for Koa",
   "license": "Apache-2.0",
   "main": "authz.js",
+  "files": [
+    "authz.js",
+    "BasicAuthorizer.js",
+    "examples",
+    "NOTICE",
+    "DISCLAIMER"
+  ],
   "scripts": {
     "prepublish": "npm run lint && npm run test",
     "fix": "eslint \"authz.js\" --fix",

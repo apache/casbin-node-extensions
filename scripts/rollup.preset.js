@@ -67,14 +67,21 @@ function declarationStage(pkgDir, info) {
   const dts = pkgRequire('rollup-plugin-dts').dts;
   // The typescript plugin nests declarations under the computed rootDir,
   // so locate the entry by name rather than assuming an exact path.
+  // Match the entry at the current level before descending: a nested
+  // module with the same basename (e.g. src/decorators/index.ts next to
+  // src/index.ts) must not shadow the entry, and readdir order is
+  // filesystem-dependent across macOS/Linux CI.
   const findEntry = (dir) => {
-    for (const name of fs.readdirSync(dir)) {
-      const full = path.join(dir, name);
-      if (fs.statSync(full).isDirectory()) {
-        const hit = findEntry(full);
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (entry.isFile() && entry.name === `${info.entryBase}.d.ts`) {
+        return path.join(dir, entry.name);
+      }
+    }
+    for (const entry of entries) {
+      if (entry.isDirectory()) {
+        const hit = findEntry(path.join(dir, entry.name));
         if (hit) return hit;
-      } else if (name === `${info.entryBase}.d.ts`) {
-        return full;
       }
     }
     return null;
