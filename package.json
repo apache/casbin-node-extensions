@@ -7,7 +7,7 @@
     "build": "pnpm -r build",
     "test": "pnpm -r test",
     "lint": "pnpm -r lint",
-    "build:all": "pnpm --filter \"./packages/**\" --no-bail build"
+    "build:all": "pnpm --filter \"./packages/**\" --filter \"!casbin-prisma-adapter\" build && pnpm --filter casbin-prisma-adapter build"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.0"
