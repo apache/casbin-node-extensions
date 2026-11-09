@@ -4,7 +4,6 @@
   "description": "Casbin Watcher based on MongoDB Change Streams",
   "license": "Apache-2.0",
   "main": "lib/cjs/watcher.js",
-  "typings": "lib/cjs/watcher.d.ts",
   "module": "lib/esm/watcher.js",
   "homepage": "https://github.com/apache/casbin-node-extensions/tree/main/packages/watchers/mongo-changestream-watcher#readme",
   "directories": {
@@ -30,7 +29,7 @@
     "test": "jest",
     "semantic-release": "semantic-release",
     "coverage": "jest --coverage",
-    "build": "rimraf lib/cjs lib/esm && rollup -c",
+    "build": "rimraf lib/cjs lib/esm && rollup -c && ROLLUP_STAGE=dts rollup -c",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "clean": "rimraf lib"
@@ -86,7 +85,8 @@
     "ts-jest": "^29.4.5",
     "typescript": "^5.1.6",
     "@rollup/plugin-typescript": "^11.1.6",
-    "rollup": "^3.29.5"
+    "rollup": "^3.29.5",
+    "rollup-plugin-dts": "^5.3.1"
   },
   "dependencies": {
     "mongodb": "^6.20.0",

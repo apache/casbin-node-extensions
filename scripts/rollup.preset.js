@@ -37,16 +37,67 @@ const HEADER = fs.readFileSync(`${__dirname}/HEADER.txt`, 'utf8').trimEnd();
 function pluginTypescript(pkgDir, compilerOptions) {
   const pkgRequire = createRequire(path.join(pkgDir, 'package.json'));
   const typescript = pkgRequire('@rollup/plugin-typescript');
-  // Note: declaration files are emitted by the typescript compiler via
-  // declarationDir, outside rollup's module pipeline, and neither
-  // output.banner nor a transformers.afterDeclarations synthetic
-  // comment reliably reaches them (the plugin's declaration printing
-  // drops SourceFile-level synthetic comments). The post-build step
-  // (scripts/add-output-headers.js) completes declaration headers.
   return typescript({
     tsconfig: path.join(pkgDir, 'tsconfig.json'),
     compilerOptions,
   });
+}
+
+// Declaration pipeline: the typescript plugin emits per-file .d.ts into
+// a temporary directory (declaration output bypasses rollup, so
+// output.banner cannot reach it), then rollup-plugin-dts bundles the
+// tree into the single file the package's `types` field already points
+// at - through rollup, so the banner applies and no post-build header
+// step is needed.
+function declarationInfo(pkgDir, pkg, out, formats) {
+  const firstOut = formats.length > 1 ? path.join(out, 'cjs') : out;
+  // The typescript plugin requires declarationDir to live inside the
+  // rollup output dir; a dot-directory there is fine because the
+  // declaration stage removes it when it finishes.
+  const tmp = path.join(pkgDir, firstOut, '.dts-tmp');
+  const typesPath = pkg.types || (pkg.main ? pkg.main.replace(/\.js$/, '.d.ts') : null);
+  if (!typesPath) return null;
+  const entryBase = path.basename(typesPath, '.d.ts');
+  const typesOut = path.join(pkgDir, typesPath.replace(/^.?\//, ''));
+  return { tmp, entryBase, typesOut };
+}
+
+function declarationStage(pkgDir, info) {
+  const pkgRequire = createRequire(path.join(pkgDir, 'package.json'));
+  const dts = pkgRequire('rollup-plugin-dts').dts;
+  // The typescript plugin nests declarations under the computed rootDir,
+  // so locate the entry by name rather than assuming an exact path.
+  const findEntry = (dir) => {
+    for (const name of fs.readdirSync(dir)) {
+      const full = path.join(dir, name);
+      if (fs.statSync(full).isDirectory()) {
+        const hit = findEntry(full);
+        if (hit) return hit;
+      } else if (name === `${info.entryBase}.d.ts`) {
+        return full;
+      }
+    }
+    return null;
+  };
+  const entry = findEntry(info.tmp);
+  if (!entry) {
+    throw new Error(`declaration entry not found under ${info.tmp}`);
+  }
+  const external = (id) => !id.startsWith('.') && !path.isAbsolute(id);
+  return {
+    input: entry,
+    external,
+    output: { file: info.typesOut, format: 'esm', banner: HEADER },
+    plugins: [
+      dts(),
+      {
+        name: 'clean-declaration-tmp',
+        closeBundle() {
+          fs.rmSync(info.tmp, { recursive: true, force: true });
+        },
+      },
+    ],
+  };
 }
 
 function sourceEntries(pkgDir) {
@@ -69,15 +120,26 @@ function sourceEntries(pkgDir) {
 function preset(pkgDir, opts = {}) {
   const formats = opts.formats || ['cjs'];
   const out = opts.out || 'lib';
-  const entries = sourceEntries(pkgDir);
+  const external = (id) => !id.startsWith('.') && !path.isAbsolute(id);
+  const pkg = JSON.parse(fs.readFileSync(path.join(pkgDir, 'package.json'), 'utf8'));
+  const info = declarationInfo(pkgDir, pkg, out, formats);
 
-  return formats.map((format) => {
+  // The declaration bundle needs the per-file .d.ts the javascript pass
+  // emits, but rollup evaluates every config before building any of
+  // them - so the two stages run as two rollup invocations, selected by
+  // the ROLLUP_STAGE environment variable (see the build scripts).
+  if (process.env.ROLLUP_STAGE === 'dts') {
+    return info ? declarationStage(pkgDir, info) : [];
+  }
+
+  const entries = sourceEntries(pkgDir);
+  return formats.map((format, index) => {
     const dir = formats.length > 1 ? path.join(out, format === 'cjs' ? 'cjs' : 'esm') : out;
     return {
       input: entries,
       // Transform only workspace-relative modules; everything bare
       // (deps, peers, builtins) remains an import/require as-is.
-      external: (id) => !id.startsWith('.') && !path.isAbsolute(id),
+      external,
       output: {
         dir: path.join(pkgDir, dir),
         format,
@@ -89,8 +151,10 @@ function preset(pkgDir, opts = {}) {
       plugins: [
         pluginTypescript(pkgDir, {
           module: 'es2015',
-          declaration: true,
-          declarationDir: path.join(pkgDir, dir),
+          // Only the first pass emits declarations (into the temporary
+          // directory); the dts stage then bundles them.
+          declaration: index === 0 && Boolean(info),
+          declarationDir: index === 0 && info ? info.tmp : undefined,
           sourceMap: true,
           // Inline TS helpers (__awaiter & co.) the way tsc output does,
           // instead of importing them from tslib at runtime.

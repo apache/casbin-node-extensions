@@ -3,7 +3,6 @@
   "version": "5.6.2",
   "description": "Mongoose adapter for Casbin",
   "main": "lib/cjs/index.js",
-  "typings": "lib/cjs/index.d.ts",
   "module": "lib/esm/index.js",
   "license": "Apache-2.0",
   "homepage": "https://github.com/apache/casbin-node-extensions/tree/main/packages/adapters/mongoose-adapter#readme",
@@ -53,7 +52,7 @@
     "test:unit": "nyc mocha -- --config test/unit/.mocharc.js",
     "tests": "run-s build && run-s test:*",
     "coverage": "nyc mocha -- --config test/.mocharc.js",
-    "build": "rimraf lib/cjs lib/esm && rollup -c",
+    "build": "rimraf lib/cjs lib/esm && rollup -c && ROLLUP_STAGE=dts rollup -c",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "clean": "rimraf lib",
@@ -81,7 +80,8 @@
     "typescript": "^5.1.6",
     "rimraf": "^5.0.5",
     "@rollup/plugin-typescript": "^11.1.6",
-    "rollup": "^3.29.5"
+    "rollup": "^3.29.5",
+    "rollup-plugin-dts": "^5.3.1"
   },
   "dependencies": {
     "mongoose": "^8.1.1",

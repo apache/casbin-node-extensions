@@ -13,7 +13,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "commit": "git-cz",
-    "build": "rimraf dist && rollup -c",
+    "build": "rimraf dist && rollup -c && ROLLUP_STAGE=dts rollup -c",
     "prepublish": "yarn lint && yarn build",
     "style": "prettier --check \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -50,7 +50,8 @@
     "tslint": "5.11.0",
     "typescript": "^5.1.6",
     "@rollup/plugin-typescript": "^11.1.6",
-    "rollup": "^3.29.5"
+    "rollup": "^3.29.5",
+    "rollup-plugin-dts": "^5.3.1"
   },
   "peerDependencies": {
     "@nestjs/common": "^9.0.3 || ^10.0.0",

@@ -4,9 +4,8 @@
   "description": "A basic adapter supports pg, sqlite3, mysql, mysql2, oracledb and mssql",
   "license": "Apache-2.0",
   "main": "lib/adapter.js",
-  "typings": "lib/adapter.d.ts",
   "scripts": {
-    "build": "rimraf lib && rollup -c",
+    "build": "rimraf lib && rollup -c && ROLLUP_STAGE=dts rollup -c",
     "lint": "eslint --ext .ts src/ test/",
     "format": "npm run format:check -- --write",
     "format:check": "prettier --check \"**/*.{md,json}\" \"{src,test}/**/*.ts\"",
@@ -47,7 +46,8 @@
     "ts-node": "^10.9.1",
     "typescript": "^5.1.6",
     "@rollup/plugin-typescript": "^11.1.6",
-    "rollup": "^3.29.5"
+    "rollup": "^3.29.5",
+    "rollup-plugin-dts": "^5.3.1"
   },
   "peerDependencies": {
     "casbin": "^5.1.2"

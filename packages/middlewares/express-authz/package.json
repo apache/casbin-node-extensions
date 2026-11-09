@@ -5,7 +5,7 @@
   "main": "./build/authz.js",
   "types": "./build/authz.d.ts",
   "scripts": {
-    "build": "rimraf build && rollup -c",
+    "build": "rimraf build && rollup -c && ROLLUP_STAGE=dts rollup -c",
     "lint": "eslint . --ext .ts",
     "fix": "eslint . --ext .ts --fix",
     "test": "jest"
@@ -70,7 +70,8 @@
     "casbin": "^4.5.0",
     "@rollup/plugin-typescript": "^11.1.6",
     "rollup": "^3.29.5",
-    "rimraf": "^5.0.5"
+    "rimraf": "^5.0.5",
+    "rollup-plugin-dts": "^5.3.1"
   },
   "husky": {
     "hooks": {}

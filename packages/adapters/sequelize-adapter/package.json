@@ -4,10 +4,9 @@
   "description": "Sequelize adapter for Casbin",
   "license": "Apache-2.0",
   "main": "lib/adapter.js",
-  "typings": "lib/adapter.d.ts",
   "scripts": {
     "precommit": "lint-staged",
-    "build": "rimraf lib && rollup -c",
+    "build": "rimraf lib && rollup -c && ROLLUP_STAGE=dts rollup -c",
     "lint": "eslint --ext .ts src/ test/",
     "test": "jest --forceExit",
     "format": "yarn format:check --write",
@@ -37,7 +36,8 @@
     "tslint": "^6.1.2",
     "typescript": "^5.1.6",
     "@rollup/plugin-typescript": "^11.1.6",
-    "rollup": "^3.29.5"
+    "rollup": "^3.29.5",
+    "rollup-plugin-dts": "^5.3.1"
   },
   "peerDependencies": {
     "casbin": "<=5.9.0 || >5.9.1"

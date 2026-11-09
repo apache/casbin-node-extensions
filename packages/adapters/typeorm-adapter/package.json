@@ -4,11 +4,10 @@
   "description": "TypeORM adapter for Casbin",
   "license": "Apache-2.0",
   "main": "lib/index.js",
-  "typings": "lib/index.d.ts",
   "scripts": {
     "precommit": "lint-staged",
     "prepublish": "yarn run lint && yarn build",
-    "build": "rimraf lib && rollup -c",
+    "build": "rimraf lib && rollup -c && ROLLUP_STAGE=dts rollup -c",
     "coverage": "jest --coverage --runInBand",
     "lint": "eslint \"src/**/*.{ts,js,jsx}\"",
     "fix": "eslint \"src/**/*.{ts,js,jsx}\" --fix",
@@ -33,7 +32,8 @@
     "ts-jest": "28.0.7",
     "typescript": "^5.1.6",
     "@rollup/plugin-typescript": "^11.1.6",
-    "rollup": "^3.29.5"
+    "rollup": "^3.29.5",
+    "rollup-plugin-dts": "^5.3.1"
   },
   "dependencies": {
     "casbin": "^5.27.0",

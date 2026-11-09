@@ -3,7 +3,6 @@
   "version": "1.0.2",
   "description": "Basic authorization middleware using casbin",
   "main": "build/index.js",
-  "typings": "build/index.d.ts",
   "directories": {
     "src": "src",
     "test": "test"
@@ -18,7 +17,7 @@
     "tsc": "tsc",
     "tsc-watch": "tsc -w",
     "test": "lab --sourcemaps --transform node_modules/lab-transform-typescript -a @hapi/code",
-    "build": "rimraf build && rollup -c"
+    "build": "rimraf build && rollup -c && ROLLUP_STAGE=dts rollup -c"
   },
   "keywords": [],
   "author": "romitkarmakar<romitkarmakar@gmail.com>",
@@ -39,7 +38,8 @@
     "typescript": "^5.1.6",
     "@rollup/plugin-typescript": "^11.1.6",
     "rollup": "^3.29.5",
-    "rimraf": "^5.0.5"
+    "rimraf": "^5.0.5",
+    "rollup-plugin-dts": "^5.3.1"
   },
   "publishConfig": {
     "registry": "https://registry.npmjs.org"

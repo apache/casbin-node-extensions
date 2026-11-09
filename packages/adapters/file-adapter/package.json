@@ -8,10 +8,9 @@
     "name": "Zixuan Liu"
   },
   "main": "lib/cjs/index.js",
-  "typings": "lib/cjs/index.d.ts",
   "module": "lib/esm/index.js",
   "scripts": {
-    "build": "rimraf lib/cjs lib/esm && rollup -c",
+    "build": "rimraf lib/cjs lib/esm && rollup -c && ROLLUP_STAGE=dts rollup -c",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "test": "jest",
@@ -38,7 +37,8 @@
     "ts-node": "^9.1.1",
     "typescript": "^5.1.6",
     "@rollup/plugin-typescript": "^11.1.6",
-    "rollup": "^3.29.5"
+    "rollup": "^3.29.5",
+    "rollup-plugin-dts": "^5.3.1"
   },
   "peerDependencies": {
     "casbin": "^5.6.1"
