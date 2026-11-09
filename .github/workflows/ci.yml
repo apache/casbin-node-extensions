@@ -20,7 +20,7 @@ jobs:
           node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build
+      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" build
 
   test-unit:
     runs-on: ubuntu-latest
@@ -31,7 +31,7 @@ jobs:
           node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build || true
+      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" build
       - name: Run service-free package tests
         run: >
           pnpm --filter casbin-file-adapter
@@ -87,7 +87,7 @@ jobs:
           node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build || true
+      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" build
       - name: Start MySQL (native auth plugin for legacy mysql@2 client)
         run: |
           docker run -d --name mysql8 -p 3306:3306 \
