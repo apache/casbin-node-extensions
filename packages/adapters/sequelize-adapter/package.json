@@ -6,7 +6,7 @@
   "main": "lib/adapter.js",
   "scripts": {
     "precommit": "lint-staged",
-    "build": "rimraf lib && rollup -c && ROLLUP_STAGE=dts rollup -c",
+    "build": "rimraf lib && rollup -c",
     "lint": "eslint --ext .ts src/ test/",
     "test": "jest --forceExit",
     "format": "yarn format:check --write",

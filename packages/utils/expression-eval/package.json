@@ -13,7 +13,7 @@
     "directory": "packages/utils/expression-eval"
   },
   "scripts": {
-    "build": "rimraf dist && rollup -c && ROLLUP_STAGE=dts rollup -c",
+    "build": "rimraf dist && rollup -c",
     "test": "jest",
     "prepublish": "yarn lint && yarn build",
     "release": "standard-version",

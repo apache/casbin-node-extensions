@@ -23,6 +23,12 @@
 // Every bare import (dependencies, peer dependencies, node builtins)
 // stays external; only workspace-relative modules are transformed.
 //
+// The returned array runs the JS pass(es) first and the declaration
+// bundle last, all inside one rollup invocation: rollup builds
+// config-array entries sequentially, and the dts entry resolves its
+// input lazily (options hook) once the JS pass has written the
+// per-file .d.ts.
+//
 // Usage in a package's rollup.config.js:
 //   const { preset } = require('../../scripts/rollup.preset.js'); // depth varies
 //   module.exports = preset(__dirname);
@@ -53,7 +59,7 @@ function declarationInfo(pkgDir, pkg, out, formats) {
   const firstOut = formats.length > 1 ? path.join(out, 'cjs') : out;
   // The typescript plugin requires declarationDir to live inside the
   // rollup output dir; a dot-directory there is fine because the
-  // declaration stage removes it when it finishes.
+  // declaration build removes it when it finishes.
   const tmp = path.join(pkgDir, firstOut, '.dts-tmp');
   const typesPath = pkg.types || (pkg.main ? pkg.main.replace(/\.js$/, '.d.ts') : null);
   if (!typesPath) return null;
@@ -62,7 +68,10 @@ function declarationInfo(pkgDir, pkg, out, formats) {
   return { tmp, entryBase, typesOut };
 }
 
-function declarationStage(pkgDir, info) {
+// dts build used by the preset and by bespoke configs (expression-eval).
+// A standalone config entry appended to a rollup config array: it runs
+// after the JS pass(es) in the same invocation.
+function declarationBuild(pkgDir, info) {
   const pkgRequire = createRequire(path.join(pkgDir, 'package.json'));
   const dts = pkgRequire('rollup-plugin-dts').dts;
   // The typescript plugin nests declarations under the computed rootDir,
@@ -86,16 +95,21 @@ function declarationStage(pkgDir, info) {
     }
     return null;
   };
-  const entry = findEntry(info.tmp);
-  if (!entry) {
-    throw new Error(`declaration entry not found under ${info.tmp}`);
-  }
-  const external = (id) => !id.startsWith('.') && !path.isAbsolute(id);
   return {
-    input: entry,
-    external,
-    output: { file: info.typesOut, format: 'esm', banner: HEADER },
     plugins: [
+      {
+        name: 'resolve-declaration-entry',
+        // Resolve here instead of at config-evaluation time: by the time
+        // this build starts, the JS pass above has written the per-file
+        // .d.ts into the temporary directory.
+        options(options) {
+          const entry = findEntry(info.tmp);
+          if (!entry) {
+            throw new Error(`declaration entry not found under ${info.tmp}`);
+          }
+          return { ...options, input: entry };
+        },
+      },
       dts(),
       {
         name: 'clean-declaration-tmp',
@@ -104,6 +118,8 @@ function declarationStage(pkgDir, info) {
         },
       },
     ],
+    external: (id) => !id.startsWith('.') && !path.isAbsolute(id),
+    output: { file: info.typesOut, format: 'esm', banner: HEADER },
   };
 }
 
@@ -131,16 +147,8 @@ function preset(pkgDir, opts = {}) {
   const pkg = JSON.parse(fs.readFileSync(path.join(pkgDir, 'package.json'), 'utf8'));
   const info = declarationInfo(pkgDir, pkg, out, formats);
 
-  // The declaration bundle needs the per-file .d.ts the javascript pass
-  // emits, but rollup evaluates every config before building any of
-  // them - so the two stages run as two rollup invocations, selected by
-  // the ROLLUP_STAGE environment variable (see the build scripts).
-  if (process.env.ROLLUP_STAGE === 'dts') {
-    return info ? declarationStage(pkgDir, info) : [];
-  }
-
   const entries = sourceEntries(pkgDir);
-  return formats.map((format, index) => {
+  const jsConfigs = formats.map((format, index) => {
     const dir = formats.length > 1 ? path.join(out, format === 'cjs' ? 'cjs' : 'esm') : out;
     return {
       input: entries,
@@ -159,7 +167,7 @@ function preset(pkgDir, opts = {}) {
         pluginTypescript(pkgDir, {
           module: 'es2015',
           // Only the first pass emits declarations (into the temporary
-          // directory); the dts stage then bundles them.
+          // directory); the dts build then bundles them.
           declaration: index === 0 && Boolean(info),
           declarationDir: index === 0 && info ? info.tmp : undefined,
           sourceMap: true,
@@ -170,6 +178,7 @@ function preset(pkgDir, opts = {}) {
       ],
     };
   });
+  return info ? [...jsConfigs, declarationBuild(pkgDir, info)] : jsConfigs;
 }
 
-module.exports = { preset };
+module.exports = { preset, declarationBuild };

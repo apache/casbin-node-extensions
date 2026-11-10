@@ -11,7 +11,7 @@
   "scripts": {
     "precommit": "lint-staged",
     "prepublish": "yarn run lint && yarn build",
-    "build": "rimraf lib && rollup -c && ROLLUP_STAGE=dts rollup -c",
+    "build": "rimraf lib && rollup -c",
     "coverage": "jest --coverage --runInBand",
     "lint": "eslint \"src/**/*.{ts,js,jsx}\"",
     "fix": "eslint \"src/**/*.{ts,js,jsx}\" --fix",

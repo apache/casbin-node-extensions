@@ -7,7 +7,7 @@
   "types": "lib/watcher.d.ts",
   "scripts": {
     "prettier": "prettier --write **/*.{ts,js}",
-    "build": "rimraf lib && rollup -c && ROLLUP_STAGE=dts rollup -c",
+    "build": "rimraf lib && rollup -c",
     "lint": "eslint -c .eslintrc.js --ext .ts src",
     "test": "jest --detectOpenHandles --runInBand"
   },

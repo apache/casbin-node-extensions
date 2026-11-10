@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "main": "lib/adapter.js",
   "scripts": {
-    "build": "rimraf lib && npx prisma generate && rollup -c && ROLLUP_STAGE=dts rollup -c",
+    "build": "rimraf lib && npx prisma generate && rollup -c",
     "lint": "eslint --ext .ts src/ test/",
     "format": "npm run format:check -- --write",
     "format:check": "prettier --check \"**/*.{md,json}\" \"{src,test}/**/*.ts\"",

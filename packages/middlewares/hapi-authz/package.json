@@ -17,7 +17,7 @@
     "tsc": "tsc",
     "tsc-watch": "tsc -w",
     "test": "lab --sourcemaps --transform node_modules/lab-transform-typescript -a @hapi/code",
-    "build": "rimraf build && rollup -c && ROLLUP_STAGE=dts rollup -c"
+    "build": "rimraf build && rollup -c"
   },
   "keywords": [],
   "author": "romitkarmakar<romitkarmakar@gmail.com>",

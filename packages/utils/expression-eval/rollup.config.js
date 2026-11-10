@@ -22,12 +22,14 @@
 //   dist/expression-eval.umd.js      ES5   UMD   (unpkg; named global
 //                                               `expressionEval`, reads
 //                                               global `jsep`)
-// Declarations follow the workspace preset's two-stage flow: this pass
-// emits per-file .d.ts into dist/.dts-tmp, and a second invocation with
-// ROLLUP_STAGE=dts bundles them into dist/index.d.ts through
-// rollup-plugin-dts so the banner applies at generation time.
+// Declarations use the shared preset's declarationBuild entry: the first
+// JS output below emits per-file .d.ts into dist/.dts-tmp, and the last
+// array entry bundles them into dist/index.d.ts through rollup-plugin-dts
+// (banner applied at generation) - all within this single rollup
+// invocation, exactly like the preset packages.
 const fs = require('fs');
 const typescript = require('@rollup/plugin-typescript');
+const { declarationBuild } = require('../../../scripts/rollup.preset.js');
 
 const banner = fs.readFileSync(`${__dirname}/../../../scripts/HEADER.txt`, 'utf8').trimEnd();
 const input = 'index.ts';
@@ -35,87 +37,59 @@ const external = ['jsep'];
 const tsOptions = (extra) => ({
   tsconfig: 'tsconfig.json',
   compilerOptions: {
-    // Inline TS helpers the way tsc output does; there is no tslib
-    // dependency and importHelpers would emit a require('tslib').
+    // Inline TS helpers (__awaiter & co.) the way tsc output does, so
+    // the emitted code does not require tslib at runtime.
     importHelpers: false,
     ...extra,
   },
 });
 
-if (process.env.ROLLUP_STAGE === 'dts') {
-  const dts = require('rollup-plugin-dts').dts;
-  const tmp = `${__dirname}/dist/.dts-tmp`;
-  const findEntry = (dir) => {
-    for (const name of fs.readdirSync(dir)) {
-      const full = `${dir}/${name}`;
-      if (fs.statSync(full).isDirectory()) {
-        const hit = findEntry(full);
-        if (hit) return hit;
-      } else if (name === 'index.d.ts') {
-        return full;
-      }
-    }
-    return null;
-  };
-  const entry = findEntry(tmp);
-  if (!entry) throw new Error('declaration entry not found under dist/.dts-tmp');
-  module.exports = {
-    input: entry,
+module.exports = [
+  {
+    input,
     external,
-    output: { file: `${__dirname}/dist/index.d.ts`, format: 'esm', banner },
+    output: { file: 'dist/expression-eval.js', format: 'cjs', sourcemap: true, exports: 'named', banner },
     plugins: [
-      dts(),
-      {
-        name: 'clean-declaration-tmp',
-        closeBundle() {
-          fs.rmSync(tmp, { recursive: true, force: true });
-        },
-      },
+      typescript(
+        tsOptions({
+          module: 'es2015',
+          target: 'es5',
+          declaration: true,
+          declarationDir: 'dist/.dts-tmp',
+          sourceMap: true,
+        })
+      ),
     ],
-  };
-} else {
-  module.exports = [
-    {
-      input,
-      external,
-      output: { file: 'dist/expression-eval.js', format: 'cjs', sourcemap: true, exports: 'named', banner },
-      plugins: [
-        typescript(
-          tsOptions({
-            module: 'es2015',
-            target: 'es5',
-            declaration: true,
-            declarationDir: 'dist/.dts-tmp',
-            sourceMap: true,
-          })
-        ),
-      ],
+  },
+  {
+    input,
+    external,
+    output: { file: 'dist/expression-eval.module.js', format: 'esm', sourcemap: true, banner },
+    plugins: [typescript(tsOptions({ module: 'es2015', target: 'es5' }))],
+  },
+  {
+    input,
+    external,
+    output: { file: 'dist/expression-eval.modern.js', format: 'esm', sourcemap: true, banner },
+    plugins: [typescript(tsOptions({ module: 'es2015', target: 'es2017' }))],
+  },
+  {
+    input,
+    external,
+    output: {
+      file: 'dist/expression-eval.umd.js',
+      format: 'umd',
+      name: 'expressionEval',
+      globals: { jsep: 'jsep' },
+      sourcemap: true,
+      exports: 'named',
+      banner,
     },
-    {
-      input,
-      external,
-      output: { file: 'dist/expression-eval.module.js', format: 'esm', sourcemap: true, banner },
-      plugins: [typescript(tsOptions({ module: 'es2015', target: 'es5' }))],
-    },
-    {
-      input,
-      external,
-      output: { file: 'dist/expression-eval.modern.js', format: 'esm', sourcemap: true, banner },
-      plugins: [typescript(tsOptions({ module: 'es2015', target: 'es2017' }))],
-    },
-    {
-      input,
-      external,
-      output: {
-        file: 'dist/expression-eval.umd.js',
-        format: 'umd',
-        name: 'expressionEval',
-        globals: { jsep: 'jsep' },
-        sourcemap: true,
-        exports: 'named',
-        banner,
-      },
-      plugins: [typescript(tsOptions({ module: 'es2015', target: 'es5' }))],
-    },
-  ];
-}
+    plugins: [typescript(tsOptions({ module: 'es2015', target: 'es5' }))],
+  },
+  declarationBuild(__dirname, {
+    tmp: `${__dirname}/dist/.dts-tmp`,
+    entryBase: 'index',
+    typesOut: `${__dirname}/dist/index.d.ts`,
+  }),
+];

@@ -6,7 +6,7 @@
   "main": "lib/watcher.js",
   "scripts": {
     "prettier": "prettier --write **/*.{ts,js}",
-    "build": "rimraf lib && rollup -c && ROLLUP_STAGE=dts rollup -c",
+    "build": "rimraf lib && rollup -c",
     "lint": "tslint -p . -c tslint.json",
     "test": "jest --forceExit",
     "coverage": "jest --coverage --forceExit",

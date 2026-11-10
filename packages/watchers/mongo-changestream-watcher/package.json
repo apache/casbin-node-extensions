@@ -29,7 +29,7 @@
     "test": "jest",
     "semantic-release": "semantic-release",
     "coverage": "jest --coverage",
-    "build": "rimraf lib/cjs lib/esm && rollup -c && ROLLUP_STAGE=dts rollup -c",
+    "build": "rimraf lib/cjs lib/esm && rollup -c",
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "tsc -p tsconfig.esm.json",
     "clean": "rimraf lib"
