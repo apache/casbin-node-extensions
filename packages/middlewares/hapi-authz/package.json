@@ -3,6 +3,7 @@
   "version": "1.0.2",
   "description": "Basic authorization middleware using casbin",
   "main": "build/index.js",
+  "types": "build/index.d.ts",
   "directories": {
     "src": "src",
     "test": "test"

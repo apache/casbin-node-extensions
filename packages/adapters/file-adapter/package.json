@@ -8,6 +8,7 @@
     "name": "Zixuan Liu"
   },
   "main": "lib/cjs/index.js",
+  "types": "lib/cjs/index.d.ts",
   "module": "lib/esm/index.js",
   "scripts": {
     "build": "rimraf lib/cjs lib/esm && rollup -c",

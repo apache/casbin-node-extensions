@@ -4,6 +4,7 @@
   "description": "Etcd watcher for node-casbin",
   "license": "Apache-2.0",
   "main": "lib/watcher.js",
+  "types": "lib/watcher.d.ts",
   "scripts": {
     "prettier": "prettier --write **/*.{ts,js}",
     "build": "rimraf lib && rollup -c",

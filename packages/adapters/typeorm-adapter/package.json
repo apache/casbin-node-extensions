@@ -4,6 +4,7 @@
   "description": "TypeORM adapter for Casbin",
   "license": "Apache-2.0",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "precommit": "lint-staged",
     "prepublish": "yarn run lint && yarn build",

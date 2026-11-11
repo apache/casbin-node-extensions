@@ -4,6 +4,7 @@
   "description": "A basic adapter supports pg, sqlite3, mysql, mysql2, oracledb and mssql",
   "license": "Apache-2.0",
   "main": "lib/adapter.js",
+  "types": "lib/adapter.d.ts",
   "scripts": {
     "build": "rimraf lib && rollup -c",
     "lint": "eslint --ext .ts src/ test/",

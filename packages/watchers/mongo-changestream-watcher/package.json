@@ -4,6 +4,7 @@
   "description": "Casbin Watcher based on MongoDB Change Streams",
   "license": "Apache-2.0",
   "main": "lib/cjs/watcher.js",
+  "types": "lib/cjs/watcher.d.ts",
   "module": "lib/esm/watcher.js",
   "homepage": "https://github.com/apache/casbin-node-extensions/tree/main/packages/watchers/mongo-changestream-watcher#readme",
   "directories": {

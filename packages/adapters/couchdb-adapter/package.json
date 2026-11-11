@@ -4,6 +4,7 @@
   "description": "CouchDB adapter for Casbin",
   "license": "Apache-2.0",
   "main": "lib/adapter.js",
+  "types": "lib/adapter.d.ts",
   "scripts": {
     "precommit": "lint-staged",
     "build": "rimraf lib && rollup -c",

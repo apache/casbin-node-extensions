@@ -4,6 +4,7 @@
   "description": "A session based role mannger for node-casbin.",
   "license": "Apache-2.0",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build": "rimraf lib && rollup -c",
     "test": "jest",

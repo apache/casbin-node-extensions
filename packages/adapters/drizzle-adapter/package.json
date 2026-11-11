@@ -4,6 +4,7 @@
   "description": "Drizzle ORM adapter for Casbin",
   "license": "Apache-2.0",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "publishConfig": {
     "tag": "latest",
     "registry": "https://registry.npmjs.org"

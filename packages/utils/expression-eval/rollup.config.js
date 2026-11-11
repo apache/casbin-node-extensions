@@ -15,21 +15,22 @@
 // limitations under the License.
 
 // Build parity with the microbundle output of @casbin/expression-eval 5.3.0:
-// four single-file artifacts, jsep external in every format.
+// four single-file artifacts, jsep external in every format. This package
+// is the workspace's ES5 exception: the shared preset keeps the TypeScript
+// compiler default target, while this config pins target es5 for the
+// legacy-parity artifacts.
 //   dist/expression-eval.js          ES5   CJS   (main)
 //   dist/expression-eval.module.js   ES5   ESM   (module)
 //   dist/expression-eval.modern.js   ES2017 ESM
 //   dist/expression-eval.umd.js      ES5   UMD   (unpkg; named global
 //                                               `expressionEval`, reads
 //                                               global `jsep`)
-// Declarations use the shared preset's declarationBuild entry: the first
-// JS output below emits per-file .d.ts into dist/.dts-tmp, and the last
-// array entry bundles them into dist/index.d.ts through rollup-plugin-dts
-// (banner applied at generation) - all within this single rollup
-// invocation, exactly like the preset packages.
+// Declarations follow the shared preset: the typescript plugin emits
+// per-file .d.ts into dist and the preset's dtsHeaderPlugin prepends the
+// Apache header at closeBundle.
 const fs = require('fs');
 const typescript = require('@rollup/plugin-typescript');
-const { declarationBuild } = require('../../../scripts/rollup.preset.js');
+const { dtsHeaderPlugin } = require('../../../scripts/rollup.preset.js');
 
 const banner = fs.readFileSync(`${__dirname}/../../../scripts/HEADER.txt`, 'utf8').trimEnd();
 const input = 'index.ts';
@@ -40,6 +41,10 @@ const tsOptions = (extra) => ({
     // Inline TS helpers (__awaiter & co.) the way tsc output does, so
     // the emitted code does not require tslib at runtime.
     importHelpers: false,
+    // Only the first output emits declarations; the others must not
+    // inherit "declaration": true from tsconfig and rewrite the headed
+    // .d.ts after the dtsHeaderPlugin pass.
+    declaration: false,
     ...extra,
   },
 });
@@ -55,10 +60,11 @@ module.exports = [
           module: 'es2015',
           target: 'es5',
           declaration: true,
-          declarationDir: 'dist/.dts-tmp',
+          declarationDir: 'dist',
           sourceMap: true,
         })
       ),
+      dtsHeaderPlugin(`${__dirname}/dist`),
     ],
   },
   {
@@ -87,9 +93,4 @@ module.exports = [
     },
     plugins: [typescript(tsOptions({ module: 'es2015', target: 'es5' }))],
   },
-  declarationBuild(__dirname, {
-    tmp: `${__dirname}/dist/.dts-tmp`,
-    entryBase: 'index',
-    typesOut: `${__dirname}/dist/index.d.ts`,
-  }),
 ];
