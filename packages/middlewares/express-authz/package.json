@@ -69,8 +69,7 @@
     "casbin": "^4.5.0",
     "@rollup/plugin-typescript": "^11.1.6",
     "rollup": "^3.29.5",
-    "rimraf": "^5.0.5",
-    "rollup-plugin-dts": "^5.3.1"
+    "rimraf": "^5.0.5"
   },
   "husky": {
     "hooks": {}

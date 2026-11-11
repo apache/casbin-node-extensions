@@ -120,7 +120,17 @@ function preset(pkgDir, opts = {}) {
   }
   const out = opts.out || 'lib';
   const entries = sourceEntries(pkgDir);
-  const baseOutput = { preserveModules: true, entryFileNames: '[name].js', sourcemap: true, banner: HEADER };
+  const srcDir = path.join(pkgDir, 'src');
+  const baseOutput = {
+    preserveModules: true,
+    entryFileNames: '[name].js',
+    sourcemap: true,
+    banner: HEADER,
+    // Named exports keep default-exported modules in the tsc-era CJS
+    // shape (exports.default = ...), matching the published npm packages
+    // and silencing rollup's MIXED_EXPORTS warning.
+    exports: 'named',
+  };
 
   return formats.map((format, index) => {
     const dir = path.join(pkgDir, formats.length > 1 ? path.join(out, FORMAT_DIRS[format]) : out);
@@ -128,6 +138,10 @@ function preset(pkgDir, opts = {}) {
       pluginTypescript(pkgDir, {
         module: 'es2015',
         sourceMap: true,
+        // Pin the declaration root to src so per-file .d.ts land next to
+        // their preserveModules .js (without it, tsc can nest them under
+        // a src/ prefix when the package has subdirectories).
+        rootDir: srcDir,
         // Every format emits its own per-file declarations into its own
         // output dir (matches the tsc-era npm layout), and the header
         // pass below runs for each of them.
