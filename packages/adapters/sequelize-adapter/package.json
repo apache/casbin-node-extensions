@@ -4,10 +4,10 @@
   "description": "Sequelize adapter for Casbin",
   "license": "Apache-2.0",
   "main": "lib/adapter.js",
-  "typings": "lib/adapter.d.ts",
+  "types": "lib/adapter.d.ts",
   "scripts": {
     "precommit": "lint-staged",
-    "build": "rimraf lib && tsc",
+    "build": "rimraf lib && rollup -c",
     "lint": "eslint --ext .ts src/ test/",
     "test": "jest --forceExit",
     "format": "yarn format:check --write",
@@ -35,7 +35,9 @@
     "rimraf": "^3.0.2",
     "ts-jest": "^26.1.0",
     "tslint": "^6.1.2",
-    "typescript": "^4.9.5"
+    "typescript": "^5.1.6",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "rollup": "^3.29.5"
   },
   "peerDependencies": {
     "casbin": "<=5.9.0 || >5.9.1"
@@ -43,7 +45,8 @@
   "dependencies": {
     "reflect-metadata": "^0.1.13",
     "sequelize": "6.29.3",
-    "sequelize-typescript": "^2.1.6"
+    "sequelize-typescript": "^2.1.6",
+    "tslib": "^2.8.1"
   },
   "files": [
     "lib",
@@ -88,7 +91,7 @@
     ]
   },
   "publishConfig": {
-    "registry": "https://registry.yarnpkg.com"
+    "registry": "https://registry.npmjs.org"
   },
   "jest": {
     "testURL": "http://localhost",

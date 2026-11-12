@@ -20,7 +20,7 @@ jobs:
           node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build
+      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" build
 
   test-unit:
     runs-on: ubuntu-latest
@@ -31,7 +31,7 @@ jobs:
           node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build || true
+      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" build
       - name: Run service-free package tests
         run: >
           pnpm --filter casbin-file-adapter
@@ -87,7 +87,7 @@ jobs:
           node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" --no-bail build || true
+      - run: pnpm --filter "./packages/**" --filter "!casbin-prisma-adapter" build
       - name: Start MySQL (native auth plugin for legacy mysql@2 client)
         run: |
           docker run -d --name mysql8 -p 3306:3306 \
@@ -143,7 +143,7 @@ jobs:
           node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter casbin-mongoose-adapter --filter @casbin/mongo-changestream-watcher --no-bail build
+      - run: pnpm --filter casbin-mongoose-adapter --filter @casbin/mongo-changestream-watcher build
       - name: Start MongoDB replica set rs0 (tests use ports 27001/27002)
         run: |
           for port in 27001 27002; do
@@ -172,7 +172,7 @@ jobs:
           node-version: 26
       - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter casbin-couchdb-adapter --filter @casbin/etcd-watcher --filter @casbin/pubsub-watcher --no-bail build
+      - run: pnpm --filter casbin-couchdb-adapter --filter @casbin/etcd-watcher --filter @casbin/pubsub-watcher build
       - name: Start CouchDB (admin/123456 on 5984)
         run: |
           docker run -d --name couchdb --network host \

@@ -4,10 +4,10 @@
   "description": "CouchDB adapter for Casbin",
   "license": "Apache-2.0",
   "main": "lib/adapter.js",
-  "typings": "lib/adapter.d.ts",
+  "types": "lib/adapter.d.ts",
   "scripts": {
     "precommit": "lint-staged",
-    "build": "rimraf lib && tsc",
+    "build": "rimraf lib && rollup -c",
     "lint": "eslint --ext .ts src/ test/",
     "test": "jest --forceExit",
     "format": "yarn format:check --write",
@@ -34,13 +34,16 @@
     "rimraf": "^3.0.2",
     "ts-jest": "^29.0.5",
     "tslint": "^6.1.2",
-    "typescript": "^4.9.5"
+    "typescript": "^5.1.6",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "rollup": "^3.29.5"
   },
   "peerDependencies": {
     "casbin": "5.23.2"
   },
   "dependencies": {
-    "nano": "^10.1.2"
+    "nano": "^10.1.2",
+    "tslib": "^2.8.1"
   },
   "files": [
     "lib",

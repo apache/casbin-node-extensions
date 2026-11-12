@@ -13,7 +13,7 @@
   "scripts": {
     "clean": "rimraf dist",
     "commit": "git-cz",
-    "build": "rimraf dist && tsc -p tsconfig.json",
+    "build": "rimraf dist && rollup -c",
     "prepublish": "yarn lint && yarn build",
     "style": "prettier --check \"src/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\"",
@@ -27,7 +27,8 @@
   "author": "dreamdevil00",
   "license": "Apache-2.0",
   "dependencies": {
-    "casbin": "^5.30.0"
+    "casbin": "^5.30.0",
+    "tslib": "^2.8.1"
   },
   "devDependencies": {
     "@nestjs/common": "^9.0.3",
@@ -47,7 +48,9 @@
     "ts-jest": "24.3.0",
     "ts-node": "10.0.0",
     "tslint": "5.11.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.1.6",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "rollup": "^3.29.5"
   },
   "peerDependencies": {
     "@nestjs/common": "^9.0.3 || ^10.0.0",

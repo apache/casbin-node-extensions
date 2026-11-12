@@ -4,10 +4,10 @@
   "description": "Redis watcher for node-casbin",
   "license": "Apache-2.0",
   "main": "lib/watcher.js",
-  "typings": "lib/watcher.d.ts",
+  "types": "lib/watcher.d.ts",
   "scripts": {
     "prettier": "prettier --write **/*.{ts,js}",
-    "build": "rimraf lib && tsc -p tsconfig.json",
+    "build": "rimraf lib && rollup -c",
     "lint": "tslint -p . -c tslint.json",
     "test": "jest --forceExit",
     "coverage": "jest --coverage --forceExit",
@@ -35,10 +35,13 @@
     "semantic-release": "^17.2.3",
     "ts-jest": "^24.2.0",
     "tslint": "^5.11.0",
-    "typescript": "^3.7.4"
+    "typescript": "^5.1.6",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "rollup": "^3.29.5"
   },
   "dependencies": {
-    "ioredis": "^4.11.1"
+    "ioredis": "^4.11.1",
+    "tslib": "^2.8.1"
   },
   "resolutions": {
     "@types/babel__traverse": "7.0.8"
@@ -62,7 +65,8 @@
     }
   ],
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
   },
   "lint-staged": {
     "*.{ts,js}": [

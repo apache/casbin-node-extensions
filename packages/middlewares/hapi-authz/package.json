@@ -3,7 +3,7 @@
   "version": "1.0.2",
   "description": "Basic authorization middleware using casbin",
   "main": "build/index.js",
-  "typings": "build/index.d.ts",
+  "types": "build/index.d.ts",
   "directories": {
     "src": "src",
     "test": "test"
@@ -18,7 +18,7 @@
     "tsc": "tsc",
     "tsc-watch": "tsc -w",
     "test": "lab --sourcemaps --transform node_modules/lab-transform-typescript -a @hapi/code",
-    "build": "tsc"
+    "build": "rimraf build && rollup -c"
   },
   "keywords": [],
   "author": "romitkarmakar<romitkarmakar@gmail.com>",
@@ -36,12 +36,18 @@
     "@types/node": "^12.12.31",
     "casbin": "^5.1.6",
     "lab-transform-typescript": "^3.0.1",
-    "typescript": "^3.8.3"
+    "typescript": "^5.1.6",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "rollup": "^3.29.5",
+    "rimraf": "^5.0.5"
   },
   "publishConfig": {
-    "registry": "https://registry.yarnpkg.com"
+    "registry": "https://registry.npmjs.org"
   },
   "bugs": {
     "url": "https://github.com/apache/casbin-node-extensions/issues"
+  },
+  "dependencies": {
+    "tslib": "^2.8.1"
   }
 }

@@ -3,6 +3,14 @@
   "version": "3.0.1",
   "description": "egg-authz is an authorization middleware for Egg.js",
   "main": "authz.js",
+  "files": [
+    "authz.js",
+    "app",
+    "config",
+    "examples",
+    "NOTICE",
+    "DISCLAIMER"
+  ],
   "scripts": {
     "prepublish": "npm run fix && npm run lint && npm run test",
     "fix": "eslint --fix app config",
@@ -36,7 +44,7 @@
   },
   "homepage": "https://github.com/apache/casbin-node-extensions/tree/main/packages/middlewares/egg-authz#readme",
   "publishConfig": {
-    "registry": "https://registry.yarnpkg.com/"
+    "registry": "https://registry.npmjs.org"
   },
   "dependencies": {
     "koa-authz": "^3.0.2"
