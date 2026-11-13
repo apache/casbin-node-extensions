@@ -7,5 +7,3 @@
 .gitignore export-ignore
 .gitattributes export-ignore
 .licenserc.yaml export-ignore
-pnpm-lock.yaml export-ignore
-**/yarn.lock export-ignore
