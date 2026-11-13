@@ -1,0 +1,216 @@
+# ASF-aligned release pipeline, deliberately one-sided:
+# preparing the vote is automatic, making packages live is always human.
+#
+#   extensions-vX.Y.Z-rc.N (tag push)  -> candidate, automatic:
+#     build, npm pack + SHASUMS manifests, source archive, upload to ATR
+#     (gated on ATR_ENABLED), npm stage publish the tarballs into the npm
+#     staging area - staged, NOT live (gated on NPM_STAGE_ENABLED),
+#     GitHub prerelease backup of all vote materials.
+#     The vote runs on dev@casbin.apache.org via ATR.
+#     ATR bundle: artifacts renamed with '-incubating' + per-file .sha512
+#     sidecars (podling + RDP checks; SHASUMS manifests are not allowed at
+#     the ATR top level). The RM must still add .asc signatures to the draft
+#     (gpg --detach-sign --armor) before ATR checks pass - CI cannot sign.
+#   extensions-vX.Y.Z (tag push)        -> nothing. The final tag is only a
+#     provenance marker; pushing it never publishes on its own.
+#   Going live after a passed vote takes two human steps:
+#     1. RM approves the staged npm packages with 2FA (npm stage approve),
+#        after checking each staged tarball against SHASUMS-npm.txt - the
+#        bytes the community voted on are the bytes that go live.
+#     2. workflow_dispatch(publish_version): verifies the final tag points
+#        at the voted RC commit, re-verifies the tarball hashes, resolves
+#        the vote and announces on ATR, and cuts the final GitHub release
+#        from the voted artifacts - the release is only created after the
+#        vote passed (polaris release-4 pattern).
+#
+# ATR/npm staging steps are gated on repo variables (ATR_ENABLED,
+# NPM_STAGE_ENABLED) so the pipeline works before enrollment (GitHub
+# prerelease keeps the vote materials alive). ATR release policy:
+# register this workflow under compose, vote and finish.
+#
+# npm uses OIDC Trusted Publishing only - no registry tokens exist.
+# Prerequisites: node 26 (bundles npm 11.20; staging needs npm >= 11.15),
+# id-token: write, and a per-package trusted-publisher entry on npmjs.com
+# (repository apache/casbin-node-extensions, workflow release.yml).
+name: Release
+
+on:
+  push:
+    tags:
+      - "extensions-v*-rc*"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Rehearse the candidate stage (no registry writes, no uploads)"
+        required: true
+        type: boolean
+        default: false
+      publish_version:
+        description: "Final version to publish, e.g. 0.1.0 (ONLY after a passed VOTE)"
+        required: false
+        type: string
+
+jobs:
+  candidate:
+    if: >-
+      (startsWith(github.ref_name, 'extensions-v') && contains(github.ref_name, '-rc')) ||
+      (github.event_name == 'workflow_dispatch' && inputs.dry_run)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 26
+          registry-url: https://registry.npmjs.org
+      - run: corepack enable && corepack prepare pnpm@10.31.0 --activate
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter "./packages/**" --no-bail build
+      - name: Pack npm tarballs and write the hash manifest
+        run: |
+          mkdir -p dist
+          pnpm -r pack --pack-destination dist
+          (cd dist && sha512sum ./*.tgz > ../SHASUMS-npm.txt)
+          cat SHASUMS-npm.txt
+      - name: Build the source archive and assemble the ATR bundle
+        id: bundle
+        run: |
+          SRC="apache-casbin-node-extensions-${TAG#extensions-}-incubating-src.tar.gz"
+          git archive --format=tar.gz -o "$SRC" HEAD
+          sha512sum "$SRC" > SHASUMS-source.txt
+          cat SHASUMS-source.txt
+          # ATR bundle: podling check wants 'incubating' in every artifact
+          # filename, RDP wants a checksum next to every artifact, and the
+          # .asc signatures are added by the RM afterwards.
+          mkdir -p atr-dist
+          cp "$SRC" atr-dist/
+          for tgz in dist/*.tgz; do
+            if tar -xzOf "$tgz" package/package.json | jq -e '.private // false' > /dev/null; then
+              echo "skip private (not part of the release): $tgz"
+              continue
+            fi
+            cp "$tgz" "atr-dist/$(basename "$tgz" .tgz)-incubating.tgz"
+          done
+          (cd atr-dist && for f in *; do sha512sum "$f" > "$f.sha512"; done)
+          # ATR version keys allow only [a-z0-9.+]; RCs are modeled as revisions
+          # of the version, so extensions-v0.1.0-rc.1 -> version 0.1.0, revision 1
+          ATR_VERSION="${TAG#extensions-v}"
+          ATR_VERSION="${ATR_VERSION%%-rc*}"
+          echo "atr-version=$ATR_VERSION" >> "$GITHUB_OUTPUT"
+      - name: Rehearse the npm publish (no registry writes)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          for tgz in dist/*.tgz; do
+            if tar -xzOf "$tgz" package/package.json | jq -e '.private // false' > /dev/null; then
+              echo "skip private: $tgz"
+              continue
+            fi
+            npm publish "$tgz" --dry-run --access public
+          done
+      - name: Stage the npm tarballs via trusted publishing (staging area, not live)
+        if: vars.NPM_STAGE_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/')
+        run: |
+          for tgz in dist/*.tgz; do
+            if tar -xzOf "$tgz" package/package.json | jq -e '.private // false' > /dev/null; then
+              echo "skip private: $tgz"
+              continue
+            fi
+            npm stage publish "$tgz" --access public
+          done
+      - name: Upload to ATR
+        if: vars.ATR_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/')
+        uses: apache/tooling-actions/upload-to-atr@56c5b7b527dc3fc2f8156e2a00acd1a7cd7c8a05
+        with:
+          # ProjectKey is lowercase alphanumeric only - must match the ATR registration
+          project: casbinnodeextensions
+          version: ${{ steps.bundle.outputs.atr-version }}
+          src: atr-dist
+          source-commit: ${{ github.sha }}
+      - name: Attach vote materials to a GitHub prerelease (backup track)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "$TAG" --prerelease \
+            -t "casbin-node-extensions ${TAG#extensions-} (candidate)" \
+            -F <(printf 'Vote materials: npm tarballs + SHASUMS-npm.txt + source archive + SHASUMS-source.txt.\nVerification: source builds; sha512 of each tarball is in SHASUMS-npm.txt; after the vote the RM approves these exact staged tarballs with 2FA.\n') \
+            "apache-casbin-node-extensions-${TAG#extensions-}-incubating-src.tar.gz" \
+            SHASUMS-source.txt SHASUMS-npm.txt \
+            dist/*.tgz
+
+  publish:
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.publish_version != '' &&
+      !inputs.dry_run
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # download the voted artifacts and cut the final GitHub release
+      id-token: write # release-on-atr (GitHub OIDC JWT); npm publishing is NOT automated
+    env:
+      VERSION: ${{ inputs.publish_version }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Gate - the final tag must point at the voted RC commit
+        id: gate
+        run: |
+          set -euo pipefail
+          FINAL="extensions-v${VERSION}"
+          RC="$(git tag -l "${FINAL}-rc*" | sort -V | tail -n 1)"
+          if [ -z "$RC" ]; then
+            echo "::error::No RC tag ${FINAL}-rc* found. A release can only be published after an RC was uploaded for vote."
+            exit 1
+          fi
+          if ! FINAL_SHA="$(git rev-parse "${FINAL}^{commit}")"; then
+            echo "::error::Final tag ${FINAL} not found. Push it first (on the RC commit), then dispatch publish."
+            exit 1
+          fi
+          RC_SHA="$(git rev-parse "${RC}^{commit}")"
+          if [ "$FINAL_SHA" != "$RC_SHA" ]; then
+            echo "::error::${FINAL} (${FINAL_SHA:0:12}) does not point at the voted ${RC} (${RC_SHA:0:12}). Re-tag ${FINAL} on the RC commit."
+            exit 1
+          fi
+          echo "Verified: ${FINAL} and ${RC} both point at ${FINAL_SHA:0:12}"
+          echo "rc=$RC" >> "$GITHUB_OUTPUT"
+      - name: Re-verify the voted artifacts and print the approval checklist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          gh release download "${{ steps.gate.outputs.rc }}" --dir dist \
+            --pattern '*.tgz' --pattern '*.tar.gz' \
+            --pattern 'SHASUMS-npm.txt' --pattern 'SHASUMS-source.txt'
+          (cd dist && sha512sum -c SHASUMS-npm.txt && sha512sum -c SHASUMS-source.txt)
+          echo "Packages go live only when the RM approves the staged versions with 2FA."
+          echo "Before approving, check every staged tarball against the hashes verified above:"
+          echo "  npm stage list && npm stage download <stage-id> && sha512sum -c SHASUMS-npm.txt"
+          echo "If staging was skipped (NPM_STAGE_ENABLED unset), publish these exact tarballs manually:"
+          echo "  npm publish <tgz> --access public"
+      - name: Resolve the vote and announce on ATR
+        if: vars.ATR_ENABLED == 'true'
+        uses: apache/tooling-actions/release-on-atr@b7ebde57bc17297396d5c351ba5a4c498b0375e3
+        with:
+          version: ${{ inputs.publish_version }}
+          resolve: "true"
+          resolve-resolution: passed
+          announce: "true"
+          announce-email-to: general@incubator.apache.org # podling channel (publisher API takes one address); RM forwards a copy to dev@casbin
+          announce-body: "The Apache Casbin team is pleased to announce the release of casbin-node-extensions (Incubating) ${VERSION} (per-package npm versions in packages/*/CHANGELOG.md)."
+      - name: GitHub release for the final tag, built from the voted artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="extensions-v${VERSION}"
+          gh release create "$TAG" \
+            -t "casbin-node-extensions (Incubating) v${VERSION}" \
+            -n "Per-package npm versions and notes in packages/*/CHANGELOG.md. Canonical release artifacts: https://downloads.apache.org/casbin/ (Incubating podling). These assets are the exact artifacts the vote covered; npm tarballs are also on the registry." \
+            dist/* \
+            || echo "::warning::release for $TAG already exists - nothing attached"
