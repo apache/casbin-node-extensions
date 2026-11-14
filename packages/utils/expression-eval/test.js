@@ -44,6 +44,7 @@ const fixtures = [
   {expr: '10%6',        expected: 4},
   {expr: '"a"+"b"',     expected: 'ab'},
   {expr: 'one + three', expected: 4},
+  {expr: expr.parse('one + two'), expected: 3},
 
   // call expression
   {expr: 'func(5)',   expected: 6},
@@ -83,6 +84,20 @@ const fixtures = [
   {expr: 'false || true',    expected: true  },
   {expr: 'false && throw()', expected: false  },
   {expr: 'true && false',    expected: false  },
+  {
+    expr: {
+      type: 'LogicalExpression', operator: '||',
+      left: expr.parse('true'), right: expr.parse('throw()'),
+    },
+    expected: true,
+  },
+  {
+    expr: {
+      type: 'LogicalExpression', operator: '&&',
+      left: expr.parse('false'), right: expr.parse('throw()'),
+    },
+    expected: false,
+  },
 
   // member expression
   {expr: 'foo.bar',      expected: 'baz' },

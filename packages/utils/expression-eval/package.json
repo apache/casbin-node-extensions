@@ -35,7 +35,7 @@
   "author": "Node-Casbin",
   "license": "Apache-2.0",
   "dependencies": {
-    "jsep": "^0.3.0",
+    "jsep": "~1.4.0",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
