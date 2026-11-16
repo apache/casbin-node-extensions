@@ -82,6 +82,14 @@ declare type operand = number | string;
 declare type unaryCallback = (a: operand) => operand;
 declare type binaryCallback = (a: operand, b: operand) => operand;
 
+// Keep accepting logical nodes from jsep 0.3.x ASTs.
+interface LogicalExpression extends jsep.Expression {
+  type: 'LogicalExpression';
+  operator: string;
+  left: jsep.Expression;
+  right: jsep.Expression;
+}
+
 type AnyExpression = jsep.ArrayExpression
   | jsep.BinaryExpression
   | jsep.MemberExpression
@@ -89,7 +97,7 @@ type AnyExpression = jsep.ArrayExpression
   | jsep.ConditionalExpression
   | jsep.Identifier
   | jsep.Literal
-  | jsep.LogicalExpression
+  | LogicalExpression
   | jsep.ThisExpression
   | jsep.UnaryExpression;
 
@@ -139,9 +147,6 @@ function evaluate(_node: jsep.Expression, context: object) {
     case 'ArrayExpression':
       return evaluateArray(node.elements, context);
 
-    case 'BinaryExpression':
-      return binops[node.operator](evaluate(node.left, context), evaluate(node.right, context));
-
     case 'CallExpression': {
       let caller, fn, assign;
       if (node.callee.type === 'MemberExpression') {
@@ -166,7 +171,9 @@ function evaluate(_node: jsep.Expression, context: object) {
     case 'Literal':
       return node.value;
 
-    case 'LogicalExpression':
+    // jsep 1.x also represents && and || as binary expressions.
+    case 'BinaryExpression':
+    case 'LogicalExpression': {
       const leftValue = evaluate(node.left, context);
       if (node.operator === '||' && leftValue) {
         return leftValue;
@@ -174,6 +181,7 @@ function evaluate(_node: jsep.Expression, context: object) {
         return leftValue;
       }
       return binops[node.operator](leftValue, evaluate(node.right, context));
+    }
 
     case 'MemberExpression':
       return evaluateMember(node, context)[1];
@@ -200,14 +208,6 @@ async function evalAsync(_node: jsep.Expression, context: object) {
 
     case 'ArrayExpression':
       return await evaluateArrayAsync(node.elements, context);
-
-    case 'BinaryExpression': {
-      const [left, right] = await Promise.all([
-        evalAsync(node.left, context),
-        evalAsync(node.right, context)
-      ]);
-      return binops[node.operator](left, right);
-    }
 
     case 'CallExpression': {
       let caller, fn, assign;
@@ -238,6 +238,7 @@ async function evalAsync(_node: jsep.Expression, context: object) {
     case 'Literal':
       return node.value;
 
+    case 'BinaryExpression':
     case 'LogicalExpression': {
       if (node.operator === '||') {
         const left = await evalAsync(node.left, context);
@@ -276,11 +277,13 @@ async function evalAsync(_node: jsep.Expression, context: object) {
 }
 
 function compile(expression: string | jsep.Expression): (context: object) => any {
-  return evaluate.bind(null, jsep(expression));
+  const ast = typeof expression === 'string' ? jsep(expression) : expression;
+  return evaluate.bind(null, ast);
 }
 
 function compileAsync(expression: string | jsep.Expression): (context: object) => Promise<any> {
-  return evalAsync.bind(null, jsep(expression));
+  const ast = typeof expression === 'string' ? jsep(expression) : expression;
+  return evalAsync.bind(null, ast);
 }
 
 // Added functions to inject Custom Unary Operators (and override existing ones)
